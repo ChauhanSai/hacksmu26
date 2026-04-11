@@ -12,5 +12,7 @@
 
 # Backend
 /venv
+*.wav
+*.mp4
 
 # Frontend
