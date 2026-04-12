@@ -10,24 +10,31 @@ VALENCE_MAP = {
     'Affiliative': 'positive', 'Coalition Building': 'positive',
     'Courtship': 'positive', 'Calf Reassurance & Protection': 'positive',
     'Lone & Object Play': 'positive', 'Calf Nourishment & Weaning': 'positive',
+    'Social Play': 'positive',
     'Aggressive': 'negative', 'Conflict & Confrontation': 'negative',
     'Protest & Distress': 'negative', 'Attacking & Mobbing': 'negative',
     'Avoidance': 'negative', 'Death': 'negative',
+    'Submissive': 'negative',
     'Foraging & Comfort Technique': 'neutral', 'Maintenance': 'neutral',
     'Attentive': 'neutral', 'Ambivalent': 'neutral',
     'Advertisement & Attraction': 'neutral', 'Birth': 'neutral',
+    'Movement Space & Leadership': 'neutral', 'Vigilance': 'neutral',
+    'Novel & Idiosyncratic': 'neutral',
 }
 
 AROUSAL_MAP = {
     'Aggressive': 'high', 'Attacking & Mobbing': 'high',
     'Birth': 'high', 'Death': 'high', 'Protest & Distress': 'high',
     'Conflict & Confrontation': 'high', 'Advertisement & Attraction': 'high',
+    'Vigilance': 'high',
     'Affiliative': 'low', 'Foraging & Comfort Technique': 'low',
     'Maintenance': 'low', 'Lone & Object Play': 'low',
     'Attentive': 'low', 'Ambivalent': 'low',
+    'Submissive': 'low',
     'Coalition Building': 'medium', 'Courtship': 'medium',
     'Calf Reassurance & Protection': 'medium', 'Calf Nourishment & Weaning': 'medium',
-    'Avoidance': 'medium',
+    'Avoidance': 'medium', 'Social Play': 'medium',
+    'Movement Space & Leadership': 'medium', 'Novel & Idiosyncratic': 'medium',
 }
 
 

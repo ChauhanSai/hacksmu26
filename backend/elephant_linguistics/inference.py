@@ -113,6 +113,35 @@ INTERPRETATION_TEMPLATES = {
         'base': "The call is associated with routine maintenance behavior (resting, dust bathing, drinking)",
         'modifiers': {},
     },
+    'Social Play': {
+        'base': "The elephant is vocalizing during social play with other elephants",
+        'modifiers': {
+            'calf': "— calves playing together, testing social dynamics",
+            'high_arousal': " with energetic, rough-and-tumble intensity",
+        },
+    },
+    'Movement Space & Leadership': {
+        'base': "The call is associated with group movement coordination or leadership",
+        'modifiers': {
+            'adult_female': "— likely a matriarch signaling direction or initiating movement",
+        },
+    },
+    'Novel & Idiosyncratic': {
+        'base': "The call is unusual or idiosyncratic — may be individually learned or culturally specific",
+        'modifiers': {},
+    },
+    'Submissive': {
+        'base': "The elephant is producing a submissive vocalization, likely yielding to a dominant individual",
+        'modifiers': {
+            'calf': "— a young animal deferring to an older one",
+        },
+    },
+    'Vigilance': {
+        'base': "The elephant is in a vigilant state, alerting or monitoring for potential threats",
+        'modifiers': {
+            'high_arousal': " — may have detected a predator or unusual stimulus",
+        },
+    },
 }
 
 
