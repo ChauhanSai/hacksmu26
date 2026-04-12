@@ -1,0 +1,21 @@
+elephant_id,n_calls,top_contexts,deviation_chi2,specialist
+E019,49,"Birth (31%), Protest & Distress (22%), Aggressive (14%)",84.2,True
+E010,25,"Affiliative (40%), Calf Nourishment & Weaning (24%), Conflict & Confrontation (16%)",76.26,True
+E016,43,"Aggressive (23%), Coalition Building (23%), Lone & Object Play (21%)",62.42,True
+E018,35,"Advertisement & Attraction (29%), Calf Nourishment & Weaning (20%), Affiliative (14%)",62.09,True
+E007,43,"Lone & Object Play (28%), Attentive (19%), Avoidance (14%)",58.35,True
+E014,26,"Calf Reassurance & Protection (23%), Foraging & Comfort Technique (23%), Lone & Object Play (19%)",46.48,True
+E013,19,"Maintenance (32%), Aggressive (26%), Foraging & Comfort Technique (26%)",40.64,True
+E006,24,"Courtship (25%), Maintenance (21%), Foraging & Comfort Technique (17%)",37.76,True
+E009,17,"Attentive (41%), Foraging & Comfort Technique (29%), Conflict & Confrontation (12%)",37.3,True
+E015,26,"Conflict & Confrontation (23%), Maintenance (19%), Calf Nourishment & Weaning (19%)",37.23,True
+E002,26,"Coalition Building (23%), Maintenance (23%), Foraging & Comfort Technique (19%)",32.55,True
+E012,17,"Courtship (29%), Protest & Distress (18%), Calf Reassurance & Protection (18%)",32.16,True
+E001,19,"Courtship (26%), Birth (21%), Calf Reassurance & Protection (11%)",30.16,True
+E008,16,"Aggressive (31%), Conflict & Confrontation (19%), Attentive (19%)",27.69,True
+E017,15,"Attentive (27%), Coalition Building (20%), Advertisement & Attraction (20%)",26.26,True
+E005,14,"Maintenance (29%), Protest & Distress (21%), Calf Nourishment & Weaning (21%)",25.01,True
+E020,27,"Foraging & Comfort Technique (30%), Maintenance (19%), Calf Nourishment & Weaning (11%)",20.47,True
+E003,33,"Attentive (21%), Foraging & Comfort Technique (21%), Aggressive (12%)",19.05,False
+E004,8,"Affiliative (38%), Protest & Distress (38%), Conflict & Confrontation (12%)",19.0,False
+E011,18,"Birth (17%), Avoidance (17%), Foraging & Comfort Technique (17%)",17.36,False

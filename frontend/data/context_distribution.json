@@ -1,0 +1,36 @@
+{
+  "contexts": [
+    "Foraging & Comfort Technique",
+    "Attentive",
+    "Calf Nourishment & Weaning",
+    "Aggressive",
+    "Lone & Object Play",
+    "Protest & Distress",
+    "Conflict & Confrontation",
+    "Maintenance",
+    "Coalition Building",
+    "Birth",
+    "Affiliative",
+    "Courtship",
+    "Advertisement & Attraction",
+    "Avoidance",
+    "Calf Reassurance & Protection"
+  ],
+  "counts": [
+    61,
+    41,
+    39,
+    38,
+    36,
+    36,
+    34,
+    33,
+    32,
+    32,
+    30,
+    25,
+    25,
+    19,
+    19
+  ]
+}

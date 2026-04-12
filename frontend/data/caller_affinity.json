@@ -1,0 +1,107 @@
+[
+  {
+    "elephant_id": "E019",
+    "n_calls": 49,
+    "top_contexts": "Birth (31%), Protest & Distress (22%), Aggressive (14%)",
+    "deviation_chi2": 84.2,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E010",
+    "n_calls": 25,
+    "top_contexts": "Affiliative (40%), Calf Nourishment & Weaning (24%), Conflict & Confrontation (16%)",
+    "deviation_chi2": 76.26,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E016",
+    "n_calls": 43,
+    "top_contexts": "Aggressive (23%), Coalition Building (23%), Lone & Object Play (21%)",
+    "deviation_chi2": 62.42,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E018",
+    "n_calls": 35,
+    "top_contexts": "Advertisement & Attraction (29%), Calf Nourishment & Weaning (20%), Affiliative (14%)",
+    "deviation_chi2": 62.09,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E007",
+    "n_calls": 43,
+    "top_contexts": "Lone & Object Play (28%), Attentive (19%), Avoidance (14%)",
+    "deviation_chi2": 58.35,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E014",
+    "n_calls": 26,
+    "top_contexts": "Calf Reassurance & Protection (23%), Foraging & Comfort Technique (23%), Lone & Object Play (19%)",
+    "deviation_chi2": 46.48,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E013",
+    "n_calls": 19,
+    "top_contexts": "Maintenance (32%), Aggressive (26%), Foraging & Comfort Technique (26%)",
+    "deviation_chi2": 40.64,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E006",
+    "n_calls": 24,
+    "top_contexts": "Courtship (25%), Maintenance (21%), Foraging & Comfort Technique (17%)",
+    "deviation_chi2": 37.76,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E009",
+    "n_calls": 17,
+    "top_contexts": "Attentive (41%), Foraging & Comfort Technique (29%), Conflict & Confrontation (12%)",
+    "deviation_chi2": 37.3,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E015",
+    "n_calls": 26,
+    "top_contexts": "Conflict & Confrontation (23%), Maintenance (19%), Calf Nourishment & Weaning (19%)",
+    "deviation_chi2": 37.23,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E002",
+    "n_calls": 26,
+    "top_contexts": "Coalition Building (23%), Maintenance (23%), Foraging & Comfort Technique (19%)",
+    "deviation_chi2": 32.55,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E012",
+    "n_calls": 17,
+    "top_contexts": "Courtship (29%), Protest & Distress (18%), Calf Reassurance & Protection (18%)",
+    "deviation_chi2": 32.16,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E001",
+    "n_calls": 19,
+    "top_contexts": "Courtship (26%), Birth (21%), Calf Reassurance & Protection (11%)",
+    "deviation_chi2": 30.16,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E008",
+    "n_calls": 16,
+    "top_contexts": "Aggressive (31%), Conflict & Confrontation (19%), Attentive (19%)",
+    "deviation_chi2": 27.69,
+    "specialist": true
+  },
+  {
+    "elephant_id": "E017",
+    "n_calls": 15,
+    "top_contexts": "Attentive (27%), Coalition Building (20%), Advertisement & Attraction (20%)",
+    "deviation_chi2": 26.26,
+    "specialist": true
+  }
+]

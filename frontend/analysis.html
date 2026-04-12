@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analysis · Pachyderm Intelligence Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <!-- ── Top bar ───────────────────────────────────────────────── -->
+  <header class="topbar sticky top-0 z-50 px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-5">
+      <span class="mono text-xs tracking-[0.22em] uppercase text-[color:var(--accent)]">◆ PACHY·TERM</span>
+      <div class="hidden md:block">
+        <h1 data-explain="Main dashboard title">ELEPHANT BEHAVIORAL INTELLIGENCE · ANALYSIS</h1>
+        <p id="today" class="ticker mt-0.5"></p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-6">
+      <nav class="flex gap-6">
+        <a href="index.html">Terminal</a>
+        <a href="analysis.html" class="active">Analysis</a>
+      </nav>
+      <span class="live-pill">LIVE</span>
+      <button id="explain-btn" class="btn" data-explain="Turns on simple hover explanations">
+        EXPLAIN
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Explain mode banner ───────────────────────────────────── -->
+  <div id="explain-banner"
+       class="hidden px-8 py-2 text-[10.5px] uppercase tracking-[0.14em]"
+       style="background: var(--accent-glow); border-bottom: 1px solid var(--accent-dim); color: var(--accent);">
+    EXPLAIN MODE · Hover any panel or data point for a plain-English description
+  </div>
+
+  <!-- ── KPI strip ─────────────────────────────────────────────── -->
+  <section class="px-8 pt-8 pb-2">
+    <div class="label mb-3" style="color: var(--text-3);">◆ SYSTEM KPI · SNAPSHOT</div>
+    <div id="summary-bar"
+         class="grid grid-cols-2 md:grid-cols-4 gap-5"
+         data-explain="High-level numbers from the analysis"></div>
+  </section>
+
+  <!-- ── Main grid ─────────────────────────────────────────────── -->
+  <main class="px-8 py-6 grid gap-5 grid-cols-1 lg:grid-cols-2">
+
+    <!-- Row 1: full-width repertoire atlas -->
+    <section class="card lg:col-span-2"
+             data-explain="Each dot is one call, grouped by sound">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="card-title"><span class="accent">01</span>REPERTOIRE ATLAS · UMAP PROJECTION</h2>
+        <button class="download-btn" data-csv="call_interpretations.csv"
+                data-explain="Download every call prediction as CSV">
+          ↓ call_interpretations.csv
+        </button>
+      </div>
+      <div id="cluster-chart" class="w-full h-[620px]"></div>
+      <p class="text-[10.5px] mt-3 uppercase tracking-[0.12em]" style="color: var(--text-2);">
+        Hover a node for full call metadata · Dashed polygons mark cluster boundaries
+      </p>
+    </section>
+
+    <!-- Row 2: PMI heatmap -->
+    <section class="card" data-explain="Which call types match which behaviors">
+      <h2 class="card-title mb-4"><span class="accent">02</span>SYMBOL × CONTEXT · PMI MATRIX</h2>
+      <div id="pmi-chart" class="w-full h-[420px]"></div>
+    </section>
+
+    <!-- Row 2: Transition matrix -->
+    <section class="card" data-explain="Which call usually follows another">
+      <h2 class="card-title mb-4"><span class="accent">03</span>SEQUENTIAL TRANSITIONS</h2>
+      <div id="transition-chart" class="w-full h-[420px]"></div>
+    </section>
+
+    <!-- Row 3: Vowel space F1/F2 -->
+    <section class="card" data-explain="Mouth-shape categories like vowels">
+      <h2 class="card-title mb-4"><span class="accent">04</span>VOWEL SPACE · F1 / F2 ARTICULATION</h2>
+      <div id="vowel-chart" class="w-full h-[400px]"></div>
+    </section>
+
+    <!-- Row 3: Context distribution -->
+    <section class="card" data-explain="How many calls per behavior type">
+      <h2 class="card-title mb-4"><span class="accent">05</span>BEHAVIORAL CONTEXT · DISTRIBUTION</h2>
+      <div id="context-chart" class="w-full h-[400px]"></div>
+    </section>
+
+    <!-- Row 4: Voice fingerprints table -->
+    <section class="card" data-explain="Each elephant's average sound profile">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="card-title"><span class="accent">06</span>VOICE FINGERPRINTS</h2>
+        <button class="download-btn" data-csv="voice_profiles.csv"
+                data-explain="Download all voice profile averages">
+          ↓ voice_profiles.csv
+        </button>
+      </div>
+      <div id="voice-table" class="overflow-auto max-h-[420px]"></div>
+    </section>
+
+    <!-- Row 4: Caller-context affinity -->
+    <section class="card" data-explain="Which context each elephant prefers">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="card-title"><span class="accent">07</span>CALLER → CONTEXT · AFFINITY</h2>
+        <button class="download-btn" data-csv="caller_context_affinity.csv"
+                data-explain="Download specialist caller data">
+          ↓ caller_context_affinity.csv
+        </button>
+      </div>
+      <div id="affinity-table" class="overflow-auto max-h-[420px]"></div>
+    </section>
+
+    <!-- Row 5: Sample interpretations (WHO/WHAT/WHY cards) -->
+    <section class="card lg:col-span-2"
+             data-explain="Sample calls with full predictions">
+      <h2 class="card-title mb-4"><span class="accent">08</span>INTELLIGENCE BRIEFINGS · SAMPLE CALLS</h2>
+      <div id="interpretations" class="grid gap-4 md:grid-cols-2"></div>
+    </section>
+
+  </main>
+
+  <!-- Explain tooltip (floating) -->
+  <div id="explain-tooltip" class="explain-tooltip hidden"></div>
+
+  <footer class="px-8 py-6 mt-6 border-t" style="border-color: var(--border);">
+    <div class="flex items-center justify-between text-[10px] uppercase tracking-[0.14em]" style="color: var(--text-3);">
+      <span>PACHY·TERM · COMPUTATIONAL BIOACOUSTICS PIPELINE</span>
+      <span class="mono">v1.0 · BUILD 2026.04</span>
+    </div>
+  </footer>
+
+  <script src="js/explain.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
