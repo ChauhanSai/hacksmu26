@@ -2,12 +2,14 @@ import yt_dlp
 import csv
 import os
 
-def download_vimeo_video(url, title=None):
+os.makedirs('data', exist_ok=True)
+
+def download_data(url, title=None):
     if title is None:
         title = '%(title)s'
     ydl_opts = {
         'format': 'bestaudio/best',   # Audio only
-        'outtmpl': title + '.%(ext)s',         # Name file after the video title
+        'outtmpl': os.path.join('data', title + '.%(ext)s'),  # Save to data folder
         'cookiesfrombrowser': ('chrome',),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -62,8 +64,8 @@ with open(outputCsv, mode='a', newline='', encoding='utf-8') as f:
             freq[name] = 1
 
         title = f'{freq[name]:02d}_{name}_{context}'
-        download_vimeo_video(tuple[0], title)
-        print(f"Downloaded: {title}")
+        download_data(tuple[0], title)
+        print(f"Downloaded: {title}\n")
 
         downloaded_urls[url] = title
 
