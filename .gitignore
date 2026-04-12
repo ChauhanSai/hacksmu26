@@ -25,6 +25,7 @@ uploads/
 cleaned_output_web/
 cleaned_output_web_v2/
 generated_spectrograms/
+*.wav
 
 # Model outputs
 *.joblib
