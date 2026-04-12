@@ -5,6 +5,10 @@
 
 // Institutional dark palette — cyan leads, risk colors for emphasis.
 const PALETTE = ['#7dd3fc', '#4ade80', '#fbbf24', '#fb923c', '#ef4444', '#c084fc'];
+
+// Desaturated muted palette for cluster scatter — pastel-on-dark
+const CLUSTER_COLORS = ['#5eead4', '#34d399', '#fbbf24', '#f87171', '#fb7185', '#a78bfa'];
+const CLUSTER_OPACITY = [0.75, 0.75, 0.72, 0.72, 0.75, 0.75];
 const GRID    = 'rgba(255,255,255,0.06)';
 const AXIS    = 'rgba(243,245,247,0.55)';
 const FONT    = { family: 'Geist, Inter, sans-serif', size: 11, color: 'rgba(243,245,247,0.78)' };
@@ -45,37 +49,35 @@ function buildClusterChart(target, data) {
   const { points, clusters } = data;
   const traces = [];
 
-  // ── Density heatmap background ────────────────────────────────────────────
+  // ── Subtle density glow (very low opacity) ───────────────────────────────
   traces.push({
     type: 'histogram2dcontour',
     x: points.map(p => p.x),
     y: points.map(p => p.y),
-    colorscale: [[0, 'rgba(0,0,0,0)'], [1, 'rgba(125,211,252,0.18)']],
+    colorscale: [[0, 'rgba(0,0,0,0)'], [1, 'rgba(94,234,212,0.08)']],
     showscale: false,
-    ncontours: 18,
+    ncontours: 12,
     contours: { showlines: false },
     hoverinfo: 'skip',
     showlegend: false,
   });
 
-  // ── Convex hull polygons ──────────────────────────────────────────────────
+  // ── Hull outlines — thin solid lines, no fill ────────────────────────────
   clusters.forEach((c, i) => {
     if (!c.hull || c.hull.length < 3) return;
-    const rgb = hexToRgb(PALETTE[i % PALETTE.length]);
+    const rgb = hexToRgb(CLUSTER_COLORS[i % CLUSTER_COLORS.length]);
     traces.push({
       type: 'scatter',
       mode: 'lines',
       x: c.hull.map(pt => pt[0]),
       y: c.hull.map(pt => pt[1]),
-      fill: 'toself',
-      fillcolor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.06)`,
-      line: { color: `rgba(${rgb.r},${rgb.g},${rgb.b},0.45)`, width: 1.2, dash: 'dot' },
+      line: { color: `rgba(${rgb.r},${rgb.g},${rgb.b},0.22)`, width: 1.2, shape: 'spline', smoothing: 0.8 },
       hoverinfo: 'skip',
       showlegend: false,
     });
   });
 
-  // ── One scatter trace per cluster (for legend + color) ────────────────────
+  // ── Group points by cluster ──────────────────────────────────────────────
   const byCluster = new Map();
   points.forEach(p => {
     if (!byCluster.has(p.cluster)) byCluster.set(p.cluster, []);
@@ -83,13 +85,13 @@ function buildClusterChart(target, data) {
   });
 
   const detailedHover = p =>
-    `<b>${p.filename}</b><br>` +
-    `Cluster ${p.cluster} (${clusters[p.cluster]?.top_context || '?'})<br>` +
+    `<b style="color:#f3f5f7">${p.filename}</b><br>` +
+    `<span style="color:${CLUSTER_COLORS[p.cluster % CLUSTER_COLORS.length]}">` +
+    `C${p.cluster}</span> · ${clusters[p.cluster]?.top_context || '?'}<br>` +
     `Context: ${p.context}<br>` +
-    `Caller: ${p.elephant_id} (${p.age_sex})<br>` +
-    `Sound: ${p.sound_type} · ${p.comm_mode}<br>` +
-    `Country: ${p.country} · Session ${p.session_id}<br>` +
-    (p.mean_f0 ? `F0: ${p.mean_f0.toFixed(1)} Hz · Dur: ${p.duration?.toFixed(2)}s` : '') +
+    `Sound: ${p.sound_type}<br>` +
+    `Caller: ${p.age_sex}<br>` +
+    (p.mean_f0 ? `F0: ${p.mean_f0.toFixed(1)} Hz · ${p.duration?.toFixed(2)}s` : '') +
     '<extra></extra>';
 
   const simpleHover = p =>
@@ -99,7 +101,8 @@ function buildClusterChart(target, data) {
   clusters.forEach((c, i) => {
     const pts = byCluster.get(c.id) || [];
     if (pts.length === 0) return;
-    const color = PALETTE[i % PALETTE.length];
+    const color = CLUSTER_COLORS[i % CLUSTER_COLORS.length];
+    const opacity = CLUSTER_OPACITY[i % CLUSTER_OPACITY.length];
     const trace = {
       type: 'scattergl',
       mode: 'markers',
@@ -108,9 +111,9 @@ function buildClusterChart(target, data) {
       y: pts.map(p => p.y),
       marker: {
         color,
-        size: 7,
-        opacity: 0.85,
-        line: { color: 'rgba(7,9,12,0.6)', width: 0.5 },
+        size: 5.5,
+        opacity,
+        line: { color: 'rgba(13,17,23,0.5)', width: 0.4 },
       },
       customdata: pts,
       hovertemplate: pts.map(detailedHover),
@@ -119,49 +122,76 @@ function buildClusterChart(target, data) {
     scatterTraces.push({ trace, pts });
   });
 
-  // ── Cluster centroid labels ───────────────────────────────────────────────
+  // ── Floating centroid labels — no box, just text + shadow ────────────────
   const annotations = clusters
     .filter(c => c.count > 0)
-    .map(c => ({
+    .map((c, i) => ({
       x: c.centroid[0],
       y: c.centroid[1],
-      text: `<b>C${c.id}</b>`,
+      text: `C${c.id}`,
       showarrow: false,
-      font: { size: 9, color: '#7dd3fc', family: 'Geist Mono, monospace' },
-      bgcolor: 'rgba(7,9,12,0.78)',
-      bordercolor: 'rgba(125,211,252,0.35)',
-      borderwidth: 1,
-      borderpad: 3,
+      font: {
+        size: 12,
+        color: CLUSTER_COLORS[i % CLUSTER_COLORS.length],
+        family: 'Geist Mono, monospace',
+        weight: 600,
+      },
+      opacity: 0.9,
     }));
 
   const layout = {
     ...BASE_LAYOUT,
-    xaxis: { title: { text: 'UMAP 1', font: { color: AXIS } }, showgrid: false, zeroline: false, ticks: '', tickfont: { color: AXIS } },
-    yaxis: { title: { text: 'UMAP 2', font: { color: AXIS } }, showgrid: false, zeroline: false, ticks: '', tickfont: { color: AXIS } },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(13,17,23,0.6)',
+    autosize: true,
+    xaxis: {
+      title: { text: 'UMAP 1', font: { color: 'rgba(243,245,247,0.45)', size: 11, family: 'Geist, sans-serif' }, standoff: 8 },
+      showgrid: true, gridcolor: 'rgba(255,255,255,0.03)', gridwidth: 1,
+      zeroline: false, showline: false, ticks: '',
+      tickfont: { color: 'rgba(255,255,255,0.18)', size: 9, family: 'Geist Mono, monospace' },
+    },
+    yaxis: {
+      title: { text: 'UMAP 2', font: { color: 'rgba(243,245,247,0.45)', size: 11, family: 'Geist, sans-serif' }, standoff: 8 },
+      showgrid: true, gridcolor: 'rgba(255,255,255,0.03)', gridwidth: 1,
+      zeroline: false, showline: false, ticks: '',
+      tickfont: { color: 'rgba(255,255,255,0.18)', size: 9, family: 'Geist Mono, monospace' },
+      scaleanchor: 'x',
+      scaleratio: 1,
+    },
     legend: {
       orientation: 'v',
-      x: 1.02, y: 1,
-      font: { size: 10, color: AXIS, family: 'Geist Mono, monospace' },
-      bgcolor: 'rgba(0,0,0,0)',
-      bordercolor: 'rgba(255,255,255,0.08)',
+      x: 0.99, y: 0.98,
+      xanchor: 'right', yanchor: 'top',
+      font: { size: 9, color: 'rgba(243,245,247,0.6)', family: 'Geist Mono, monospace' },
+      bgcolor: 'rgba(13,17,23,0.88)',
+      bordercolor: 'rgba(255,255,255,0.06)',
       borderwidth: 1,
+      itemsizing: 'constant',
+      tracegroupgap: 1,
     },
     annotations,
-    margin: { l: 60, r: 190, t: 20, b: 60 },
+    margin: { l: 48, r: 16, t: 12, b: 44 },
+    hoverlabel: {
+      bgcolor: 'rgba(13,17,23,0.94)',
+      bordercolor: 'rgba(255,255,255,0.1)',
+      font: { family: 'Geist Mono, monospace', size: 11, color: 'rgba(243,245,247,0.85)' },
+    },
   };
 
-  Plotly.newPlot(target, traces, layout, CONFIG);
+  const plotConfig = {
+    displaylogo: false,
+    responsive: true,
+    modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian', 'toggleSpikelines'],
+    displayModeBar: 'hover',
+  };
 
-  // Register explain-mode updater (swap hover templates)
+  Plotly.newPlot(target, traces, layout, plotConfig);
+
   registerChart(target, (on) => {
-    const update = {};
     const indices = [];
     traces.forEach((t, i) => {
-      if (t.mode === 'markers' && t.customdata) {
-        indices.push(i);
-      }
+      if (t.mode === 'markers' && t.customdata) indices.push(i);
     });
-    // Recompute templates for scatter traces
     const newTemplates = indices.map(i => {
       const t = traces[i];
       return t.customdata.map(on ? simpleHover : detailedHover);
