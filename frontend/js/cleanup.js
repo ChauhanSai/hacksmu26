@@ -43,6 +43,23 @@ const audioSeekFill = document.getElementById('audio-seek-fill');
 const audioTimeCurrent = document.getElementById('audio-time-current');
 const audioTimeDuration = document.getElementById('audio-time-duration');
 const processingHeadline = document.getElementById('processing-headline');
+const recordBtn = document.getElementById('record-btn');
+const recordBtnText = document.getElementById('record-btn-text');
+const recordIconMic = document.getElementById('record-icon-mic');
+const recordIconStop = document.getElementById('record-icon-stop');
+const recordingIndicator = document.getElementById('recording-indicator');
+const recordingTime = document.getElementById('recording-time');
+const recordingVisualizer = document.getElementById('recording-visualizer');
+const analyzeBtn = document.getElementById('analyze-btn');
+
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingStartTime = null;
+let recordingTimer = null;
+let audioContext = null;
+let analyser = null;
+let visualizerAnimationId = null;
+let lastProcessedData = null;
 
 /** Labels must stay in sync with `#pipeline-steps` in cleanup.html */
 const PIPELINE_STEPS = [
@@ -61,6 +78,7 @@ let segments = [];
 let seekPointerActive = false;
 let pipelineStepTimer = null;
 let pipelineStepEls = null;
+let isRecording = false;
 
 function getPipelineStepEls() {
   if (!pipelineStepEls) {
@@ -377,32 +395,6 @@ function showUploadPhase() {
   }, 200);
 }
 
-function displayResults(data) {
-  summaryText.textContent = data.summary_line || 'Processing complete.';
-
-  beforeSpectrogram.src = data.before_image_url;
-  afterSpectrogram.src = data.after_image_url;
-  downloadSpectrogram.href = data.after_image_url;
-
-  cleanedAudio.src = data.audio_url;
-  downloadAudio.href = data.audio_url;
-  downloadAudio.download = data.audio_download_name || 'cleaned_audio.wav';
-
-  const duration = parseFloat(data.duration_seconds) || 0;
-  playbackStatus.textContent = `Duration: ${duration.toFixed(2)}s`;
-  setPlayerPlaying(false);
-  syncPlayerUi();
-
-  const segs = (data.segments || []).map((s) => ({
-    start: parseFloat(s.start),
-    end: parseFloat(s.end),
-    label: typeof s.label === 'string' ? s.label : null,
-  }));
-  renderSegments(segs, duration);
-
-  showResultsPhase();
-}
-
 function resetResultsView() {
   cleanedAudio.pause();
   cleanedAudio.removeAttribute('src');
@@ -588,5 +580,228 @@ if (audioSeekWrap && audioSeekBar) {
       cleanedAudio.currentTime = Math.max(0, cleanedAudio.currentTime - step);
     }
     syncPlayerUi();
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RECORDING FUNCTIONALITY
+// ════════════════════════════════════════════════════════════════
+
+function formatRecordingTime(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min}:${String(sec).padStart(2, '0')}`;
+}
+
+function drawVisualizer() {
+  if (!analyser || !recordingVisualizer) return;
+  const ctx = recordingVisualizer.getContext('2d');
+  const width = recordingVisualizer.width;
+  const height = recordingVisualizer.height;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+
+  function draw() {
+    if (!isRecording) return;
+    visualizerAnimationId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArray);
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(0, 0, width, height);
+
+    const barWidth = (width / bufferLength) * 2.5;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = (dataArray[i] / 255) * height;
+      const red = 239;
+      const green = 68 + (dataArray[i] / 255) * 50;
+      const blue = 68;
+      ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+      ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+      x += barWidth + 1;
+    }
+  }
+  draw();
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(stream);
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(track => track.stop());
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+      }
+      
+      const webmBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const wavBlob = await convertToWav(webmBlob);
+      const file = new File([wavBlob], `recording_${Date.now()}.wav`, { type: 'audio/wav' });
+      handleFileSelect(file);
+    };
+
+    mediaRecorder.start(100);
+    isRecording = true;
+    recordingStartTime = Date.now();
+
+    recordBtn.classList.add('recording');
+    recordBtnText.textContent = 'Stop Recording';
+    recordIconMic.classList.add('hidden');
+    recordIconStop.classList.remove('hidden');
+    recordingIndicator.classList.remove('hidden');
+    dropzone.classList.add('hidden');
+    selectedFile.classList.add('hidden');
+
+    if (recordingVisualizer) {
+      recordingVisualizer.width = recordingVisualizer.offsetWidth;
+      recordingVisualizer.height = recordingVisualizer.offsetHeight;
+    }
+    drawVisualizer();
+
+    recordingTimer = setInterval(() => {
+      const elapsed = Date.now() - recordingStartTime;
+      recordingTime.textContent = formatRecordingTime(elapsed);
+    }, 100);
+
+  } catch (err) {
+    console.error('Recording error:', err);
+    showError('Could not access microphone. Please allow microphone permissions.');
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  isRecording = false;
+
+  if (recordingTimer) {
+    clearInterval(recordingTimer);
+    recordingTimer = null;
+  }
+  if (visualizerAnimationId) {
+    cancelAnimationFrame(visualizerAnimationId);
+    visualizerAnimationId = null;
+  }
+
+  recordBtn.classList.remove('recording');
+  recordBtnText.textContent = 'Record Audio';
+  recordIconMic.classList.remove('hidden');
+  recordIconStop.classList.add('hidden');
+  recordingIndicator.classList.add('hidden');
+}
+
+async function convertToWav(webmBlob) {
+  const arrayBuffer = await webmBlob.arrayBuffer();
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+  
+  const numChannels = 1;
+  const sampleRate = audioBuffer.sampleRate;
+  const format = 1;
+  const bitDepth = 16;
+  
+  const channelData = audioBuffer.getChannelData(0);
+  const samples = channelData.length;
+  const buffer = new ArrayBuffer(44 + samples * 2);
+  const view = new DataView(buffer);
+  
+  function writeString(offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  }
+  
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + samples * 2, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * numChannels * bitDepth / 8, true);
+  view.setUint16(32, numChannels * bitDepth / 8, true);
+  view.setUint16(34, bitDepth, true);
+  writeString(36, 'data');
+  view.setUint32(40, samples * 2, true);
+  
+  let offset = 44;
+  for (let i = 0; i < samples; i++) {
+    const s = Math.max(-1, Math.min(1, channelData[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    offset += 2;
+  }
+  
+  audioCtx.close();
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+if (recordBtn) {
+  recordBtn.addEventListener('click', () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ANALYZE BUTTON - OPEN REPORT PAGE
+// ════════════════════════════════════════════════════════════════
+
+function displayResults(data) {
+  lastProcessedData = data;
+  summaryText.textContent = data.summary_line || 'Processing complete.';
+
+  beforeSpectrogram.src = data.before_image_url;
+  afterSpectrogram.src = data.after_image_url;
+  downloadSpectrogram.href = data.after_image_url;
+
+  cleanedAudio.src = data.audio_url;
+  downloadAudio.href = data.audio_url;
+  downloadAudio.download = data.audio_download_name || 'cleaned_audio.wav';
+
+  const duration = parseFloat(data.duration_seconds) || 0;
+  playbackStatus.textContent = `Duration: ${duration.toFixed(2)}s`;
+  setPlayerPlaying(false);
+  syncPlayerUi();
+
+  const segs = (data.segments || []).map((s) => ({
+    start: parseFloat(s.start),
+    end: parseFloat(s.end),
+    label: typeof s.label === 'string' ? s.label : null,
+  }));
+  renderSegments(segs, duration);
+
+  showResultsPhase();
+}
+
+if (analyzeBtn) {
+  analyzeBtn.addEventListener('click', () => {
+    if (!lastProcessedData) {
+      showError('No processed audio to analyze. Please process an audio file first.');
+      return;
+    }
+    
+    sessionStorage.setItem('elephantAudioData', JSON.stringify(lastProcessedData));
+    window.open('audio-report.html', '_blank');
   });
 }

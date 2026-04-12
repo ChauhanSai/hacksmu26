@@ -41,7 +41,7 @@
   <main class="px-8 py-6 grid gap-5 grid-cols-1 lg:grid-cols-2">
 
     <!-- Row 1: full-width repertoire atlas -->
-    <section class="card lg:col-span-2"
+    <section class="card lg:col-span-2 max-w-[95vw] mx-auto"
              data-explain="Each dot is one call, grouped by sound">
       <div class="flex items-center justify-between mb-4">
         <h2 class="card-title"><span class="accent">01</span>REPERTOIRE ATLAS · UMAP PROJECTION</h2>
@@ -50,9 +50,9 @@
           ↓ call_interpretations.csv
         </button>
       </div>
-      <div id="cluster-chart" class="w-full h-[620px]"></div>
+      <div id="cluster-chart" class="w-full h-[calc(100vh-280px)] min-h-[350px] max-h-[520px]"></div>
       <p class="text-[10.5px] mt-3 uppercase tracking-[0.12em]" style="color: var(--text-2);">
-        Hover a node for full call metadata · Dashed polygons mark cluster boundaries
+        Hover any node for call metadata · Cluster outlines mark acoustic boundaries
       </p>
     </section>
 
