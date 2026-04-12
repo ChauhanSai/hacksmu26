@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Elephant Audio Cleaner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Audio-Only Elephant Cleaner</p>
+          <h1>Upload one recording and get an auto-detected rumble-only result with before and after spectrograms.</h1>
+          <p class="lede">
+            The cleaner now generates its own spectrogram from the audio, detects likely
+            elephant-rumble regions from low-frequency and harmonic structure, suppresses
+            stationary noise and tonal lines, and then plots the cleaned result so you can
+            compare what was removed.
+          </p>
+        </div>
+
+        <div class="hero-card">
+          <p class="card-label">Flow</p>
+          <ol class="flow-list">
+            <li>Upload the noisy WAV.</li>
+            <li>The app builds the before spectrogram automatically.</li>
+            <li>It detects likely rumble windows from the recording itself.</li>
+            <li>It cleans and extracts the rumble-only audio.</li>
+            <li>You compare the before and after spectrograms side by side.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <section class="panel form-panel">
+          <div class="panel-heading">
+            <p class="panel-label">Input</p>
+            <h2>Run the cleaner</h2>
+          </div>
+
+          <form method="post" enctype="multipart/form-data" class="upload-form">
+            <label class="dropzone">
+              <span class="dropzone-title">Noisy WAV</span>
+              <span class="dropzone-copy">Upload a single recording. No timestamps or spectrogram image needed.</span>
+              <input type="file" name="audio" accept=".wav,audio/wav" required />
+            </label>
+
+            <p class="hint">
+              The app will auto-generate the before spectrogram, detect rumble regions,
+              clean the signal in the elephant band, and then render the after spectrogram.
+            </p>
+
+            <button type="submit">Clean Audio and Generate Comparison</button>
+          </form>
+
+          {% if error %}
+          <div class="status error">{{ error }}</div>
+          {% endif %}
+        </section>
+
+        <section class="panel results-panel">
+          <div class="panel-heading">
+            <p class="panel-label">Comparison</p>
+            <h2>Before and after</h2>
+          </div>
+
+          {% if audio_url %}
+          <div class="result-summary">
+            <p class="result-label">Processed</p>
+            <p class="result-copy">
+              Cleaned <strong>{{ original_name }}</strong>. {{ summary_line }}
+            </p>
+          </div>
+
+          <div class="compare-grid">
+            <figure class="spectrogram-card">
+              <figcaption>Before spectrogram</figcaption>
+              <img src="{{ before_image_url }}" alt="Generated before spectrogram" />
+            </figure>
+
+            <figure class="spectrogram-card">
+              <figcaption>After spectrogram</figcaption>
+              <img src="{{ after_image_url }}" alt="Generated after spectrogram" />
+            </figure>
+          </div>
+
+          {% if segments %}
+          <div class="segment-card">
+            <p class="audio-label">Detected rumble windows</p>
+            <div class="segment-timeline" aria-hidden="true">
+              {% for segment in segments %}
+              <span
+                class="segment-bar"
+                data-segment-label="{{ segment.label }}"
+                style="left: {{ segment.start_pct }}%; width: {{ segment.width_pct }}%;"
+              ></span>
+              {% endfor %}
+            </div>
+            <div class="segment-list">
+              {% for segment in segments %}
+              <span
+                class="segment-pill"
+                data-segment-label="{{ segment.label }}"
+              >{{ segment.label }}: {{ segment.start }}s to {{ segment.end }}s</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="audio-card">
+            <p class="audio-label">Cleaned audio</p>
+            <p class="result-copy">
+              Full cleaned recording duration: {{ duration_seconds }}s.
+              {% if segments %}Rumble labels below the player update as playback moves through the detected windows.{% endif %}
+            </p>
+            <audio controls preload="metadata" src="{{ audio_url }}"></audio>
+            {% if segments %}
+            <p class="playback-status" data-playback-status>Current region: Outside detected rumble</p>
+            {% endif %}
+            <div class="actions">
+              <a class="action primary" href="{{ audio_url }}">Open cleaned audio</a>
+              <a class="action" href="{{ audio_url }}" download="{{ audio_download_name }}">Download WAV</a>
+              <a class="action" href="{{ after_image_url }}" target="_blank" rel="noreferrer">Open after spectrogram</a>
+            </div>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <p class="empty-title">No comparison yet.</p>
+            <p class="empty-copy">
+              Upload one WAV file and this area will fill with generated before and after
+              spectrograms plus the cleaned elephant-only audio.
+            </p>
+          </div>
+          {% endif %}
+        </section>
+      </section>
+    </main>
+    {% if segments %}
+    <script>
+      const audio = document.querySelector("audio");
+      const status = document.querySelector("[data-playback-status]");
+      const pills = Array.from(document.querySelectorAll(".segment-pill"));
+      const bars = Array.from(document.querySelectorAll(".segment-bar"));
+      const segments = [
+        {% for segment in segments %}
+        { label: "{{ segment.label }}", start: {{ segment.start }}, end: {{ segment.end }} },
+        {% endfor %}
+      ];
+
+      function updatePlaybackState() {
+        if (!audio || !status) return;
+        const current = audio.currentTime;
+        let activeLabel = null;
+        segments.forEach((segment) => {
+          const active = current >= segment.start && current <= segment.end;
+          if (active) activeLabel = segment.label;
+          pills
+            .filter((pill) => pill.dataset.segmentLabel === segment.label)
+            .forEach((pill) => pill.classList.toggle("active", active));
+          bars
+            .filter((bar) => bar.dataset.segmentLabel === segment.label)
+            .forEach((bar) => bar.classList.toggle("active", active));
+        });
+        status.textContent = activeLabel
+          ? `Current region: ${activeLabel}`
+          : "Current region: Outside detected rumble";
+      }
+
+      if (audio) {
+        audio.addEventListener("timeupdate", updatePlaybackState);
+        audio.addEventListener("seeked", updatePlaybackState);
+        audio.addEventListener("play", updatePlaybackState);
+        audio.addEventListener("pause", updatePlaybackState);
+      }
+    </script>
+    {% endif %}
+  </body>
+</html>

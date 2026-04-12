@@ -1,0 +1,9 @@
+flask
+librosa
+matplotlib
+numpy
+pandas
+Pillow
+scikit-learn
+scipy
+soundfile
