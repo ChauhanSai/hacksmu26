@@ -1,0 +1,54 @@
+elephant_id,n_calls,top_contexts,deviation_chi2,specialist
+Mating-Pandemonium,91,"Advertisement & Attraction (79%), Courtship (12%), Affiliative (7%)",407.99,True
+Coalition,26,"Aggressive (73%), Attacking & Mobbing (27%)",332.05,True
+Lets-Go-Stance,21,Movement Space & Leadership (100%),251.35,True
+Charge,34,"Attacking & Mobbing (85%), Social Play (15%)",247.08,True
+Grumble-Rumble,22,"Calf Nourishment & Weaning (77%), Protest & Distress (23%)",225.67,True
+Lets-Go-Rumble,24,"Movement Space & Leadership (88%), Courtship (12%)",217.67,True
+Trumpet-Blast,55,"Attacking & Mobbing (60%), Calf Reassurance & Protection (16%), Conflict & Confrontation (11%)",209.86,True
+Sparring,43,"Social Play (98%), Courtship (2%)",197.52,True
+Rumble-Roar-Rumble,24,"Novel & Idiosyncratic (58%), Calf Nourishment & Weaning (21%), Advertisement & Attraction (12%)",180.12,True
+Chase,22,Courtship (100%),180.08,True
+Little-Greeting-Rumble,36,"Affiliative (72%), Social Play (25%), Courtship (3%)",176.78,True
+Roaring-Rumble,22,"Conflict & Confrontation (73%), Courtship (14%), Affiliative (9%)",172.71,True
+Rumble-Roar,43,"Conflict & Confrontation (49%), Courtship (26%), Aggressive (9%)",162.97,True
+Mating,19,Courtship (100%),156.34,True
+Cadenced-Rumble,17,"Movement Space & Leadership (76%), Courtship (18%), Coalition Building (6%)",119.85,True
+Alarmed-Trumpet,16,"Conflict & Confrontation (69%), Calf Reassurance & Protection (19%), Courtship (12%)",119.52,True
+Conciliation,28,"Affiliative (64%), Social Play (36%)",116.65,True
+Roar,13,"Protest & Distress (85%), Calf Nourishment & Weaning (15%)",116.62,True
+Greeting-Rumble,27,"Affiliative (63%), Social Play (33%), Courtship (4%)",105.56,True
+Play-Trumpet,31,"Social Play (74%), Novel & Idiosyncratic (23%), Advertisement & Attraction (3%)",105.32,True
+Greeting-Ceremony,20,"Affiliative (75%), Courtship (10%), Social Play (10%)",105.13,True
+Floppy-Running,20,Social Play (100%),99.14,True
+Movement-Initiation,12,"Movement Space & Leadership (83%), Attacking & Mobbing (17%)",96.73,True
+Group-Charge,10,Attacking & Mobbing (100%),96.0,True
+Begging-Rumble,12,"Calf Nourishment & Weaning (83%), Protest & Distress (8%), Calf Reassurance & Protection (8%)",95.03,True
+Estrous-Rumble,21,"Courtship (62%), Advertisement & Attraction (38%)",80.4,True
+Pulsated-Trumpet,30,"Social Play (70%), Attacking & Mobbing (17%), Protest & Distress (13%)",79.4,True
+Bunching,10,"Calf Reassurance & Protection (90%), Coalition Building (10%)",78.0,True
+Coo-Rumble,12,"Calf Reassurance & Protection (67%), Calf Nourishment & Weaning (33%)",73.03,True
+Cry-Rumble,11,"Calf Nourishment & Weaning (73%), Conflict & Confrontation (18%), Protest & Distress (9%)",63.45,True
+Squelch,9,"Novel & Idiosyncratic (89%), Social Play (11%)",62.26,True
+Husky-Cry,11,"Calf Reassurance & Protection (55%), Protest & Distress (45%)",55.45,True
+Blow,9,"Foraging & Comfort Technique (78%), Maintenance (22%)",50.61,True
+Caressing,7,Calf Reassurance & Protection (100%),50.2,True
+Female-Chorus-Rumble,11,"Advertisement & Attraction (64%), Courtship (36%)",45.3,True
+Bow-Neck-Charge,12,"Social Play (75%), Attacking & Mobbing (25%)",40.63,True
+Social-Trumpet,10,"Coalition Building (60%), Affiliative (20%), Advertisement & Attraction (20%)",39.39,True
+Estrous-Roar,8,"Advertisement & Attraction (75%), Courtship (25%)",39.38,True
+Escalated-Contest,6,Aggressive (100%),39.03,True
+Squeak,6,Novel & Idiosyncratic (100%),39.03,True
+Solicit-Suckling,6,Calf Nourishment & Weaning (100%),39.03,True
+Body-Axis-Pointing,6,Movement Space & Leadership (100%),39.03,True
+Roar-Rumble,14,"Advertisement & Attraction (50%), Courtship (29%), Aggressive (14%)",35.24,True
+Dueling,5,Aggressive (100%),30.0,True
+Estrous-Walk,5,Advertisement & Attraction (100%),30.0,True
+Sneeze,5,Maintenance (100%),30.0,True
+Separated-Rumble,5,Protest & Distress (100%),30.0,True
+Snort,6,"Social Play (67%), Conflict & Confrontation (33%)",22.55,True
+Protest-Trumpet,6,"Social Play (50%), Protest & Distress (50%)",20.76,True
+Bonding-Ceremony,5,"Calf Reassurance & Protection (60%), Coalition Building (40%)",18.0,False
+Contact-Rumble,6,"Movement Space & Leadership (50%), Courtship (33%), Novel & Idiosyncratic (17%)",17.03,False
+Baroo-Rumble,7,"Calf Reassurance & Protection (29%), Conflict & Confrontation (29%), Protest & Distress (29%)",14.03,False
+Guiding,5,"Movement Space & Leadership (40%), Calf Nourishment & Weaning (40%), Calf Reassurance & Protection (20%)",14.0,False

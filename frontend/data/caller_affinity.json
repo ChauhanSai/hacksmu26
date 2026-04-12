@@ -1,0 +1,107 @@
+[
+  {
+    "elephant_id": "Mating-Pandemonium",
+    "n_calls": 91,
+    "top_contexts": "Advertisement & Attraction (79%), Courtship (12%), Affiliative (7%)",
+    "deviation_chi2": 407.99,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Coalition",
+    "n_calls": 26,
+    "top_contexts": "Aggressive (73%), Attacking & Mobbing (27%)",
+    "deviation_chi2": 332.05,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Lets-Go-Stance",
+    "n_calls": 21,
+    "top_contexts": "Movement Space & Leadership (100%)",
+    "deviation_chi2": 251.35,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Charge",
+    "n_calls": 34,
+    "top_contexts": "Attacking & Mobbing (85%), Social Play (15%)",
+    "deviation_chi2": 247.08,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Grumble-Rumble",
+    "n_calls": 22,
+    "top_contexts": "Calf Nourishment & Weaning (77%), Protest & Distress (23%)",
+    "deviation_chi2": 225.67,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Lets-Go-Rumble",
+    "n_calls": 24,
+    "top_contexts": "Movement Space & Leadership (88%), Courtship (12%)",
+    "deviation_chi2": 217.67,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Trumpet-Blast",
+    "n_calls": 55,
+    "top_contexts": "Attacking & Mobbing (60%), Calf Reassurance & Protection (16%), Conflict & Confrontation (11%)",
+    "deviation_chi2": 209.86,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Sparring",
+    "n_calls": 43,
+    "top_contexts": "Social Play (98%), Courtship (2%)",
+    "deviation_chi2": 197.52,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Rumble-Roar-Rumble",
+    "n_calls": 24,
+    "top_contexts": "Novel & Idiosyncratic (58%), Calf Nourishment & Weaning (21%), Advertisement & Attraction (12%)",
+    "deviation_chi2": 180.12,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Chase",
+    "n_calls": 22,
+    "top_contexts": "Courtship (100%)",
+    "deviation_chi2": 180.08,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Little-Greeting-Rumble",
+    "n_calls": 36,
+    "top_contexts": "Affiliative (72%), Social Play (25%), Courtship (3%)",
+    "deviation_chi2": 176.78,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Roaring-Rumble",
+    "n_calls": 22,
+    "top_contexts": "Conflict & Confrontation (73%), Courtship (14%), Affiliative (9%)",
+    "deviation_chi2": 172.71,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Rumble-Roar",
+    "n_calls": 43,
+    "top_contexts": "Conflict & Confrontation (49%), Courtship (26%), Aggressive (9%)",
+    "deviation_chi2": 162.97,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Mating",
+    "n_calls": 19,
+    "top_contexts": "Courtship (100%)",
+    "deviation_chi2": 156.34,
+    "specialist": true
+  },
+  {
+    "elephant_id": "Cadenced-Rumble",
+    "n_calls": 17,
+    "top_contexts": "Movement Space & Leadership (76%), Courtship (18%), Coalition Building (6%)",
+    "deviation_chi2": 119.85,
+    "specialist": true
+  }
+]

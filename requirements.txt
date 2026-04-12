@@ -1,0 +1,12 @@
+flask
+flask-cors
+librosa
+matplotlib
+numpy
+pandas
+Pillow
+scikit-learn
+scipy
+soundfile
+solana>=0.30.0
+base58

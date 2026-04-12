@@ -1,0 +1,43 @@
+# MacOS
+.DS_Store
+
+# Environment variables
+*.env
+
+# JetBrains
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Backend
+/venv
+venv/
+.venv/
+
+# Python
+__pycache__/
+*/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Audio cleanup outputs (generated files)
+uploads/
+cleaned_output_web/
+cleaned_output_web_v2/
+generated_spectrograms/
+*.wav
+
+# Segmented data folders
+segmented-*/
+*.zip
+
+# Frontend
+
+# Model outputs
+*.joblib
+
+# Contribute uploads & ledger (demo)
+contribute_uploads/
+data/contribute_submissions.json

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tusk and Tidy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <header class="topbar fixed top-0 inset-x-0 z-50 px-8 py-4 flex items-center justify-between">
+    <a href="index.html" class="topbar-wordmark">Tusk and Tidy</a>
+
+    <nav class="flex items-center gap-7">
+      <a href="index.html" class="active">Home</a>
+      <a href="cleanup.html">Cleanup</a>
+      <a href="analysis.html">Analysis</a>
+      <a href="contribute.html">Contribute</a>
+    </nav>
+  </header>
+
+  <div class="hero-root">
+    <section class="hero-section">
+
+      <div id="hero-bg" class="hero-bg">
+        <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=1920&auto=format&fit=crop"
+             alt="Elephant habitat" />
+      </div>
+
+      <div class="hero-stage">
+
+        <div id="hero-media" class="hero-media" style="width:300px; height:400px;">
+          <img src="https://images.unsplash.com/photo-1564760055775-d63b17a55c44?q=80&w=1280&auto=format&fit=crop"
+               alt="Elephant portrait" />
+        </div>
+
+        <div class="hero-title-wrap">
+          <div class="flex flex-col md:flex-row gap-2 md:gap-6 items-center justify-center">
+            <h1 id="hero-title-left" class="hero-title-line"><span class="home-title-inner">Tusk</span></h1>
+            <h1 id="hero-title-right" class="hero-title-line"><span class="home-title-inner home-title-inner--delay">and Tidy</span></h1>
+          </div>
+          <div id="hero-subline" class="hero-subline">
+            <span class="dot"></span>
+            <span>Bioacoustics, cleaned up</span>
+            <span class="dot"></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="hero-content" class="hero-content hero-content--routes">
+        <div class="label mb-6">Choose a path</div>
+        <p class="text-[color:var(--text-1)] text-sm max-w-xl mb-10 leading-relaxed">
+          Start by cleaning a recording, then explore the analysis terminal on your processed audio when you’re ready.
+        </p>
+
+        <div class="home-routes">
+          <a href="cleanup.html" class="home-route-card">
+            <span class="home-route-card__kicker mono">01</span>
+            <span class="home-route-card__title">Cleanup</span>
+            <span class="home-route-card__desc">Upload noisy WAVs, run the pipeline, and review before/after spectrograms with labeled rumble windows.</span>
+            <span class="home-route-card__arrow" aria-hidden="true">→</span>
+          </a>
+          <a href="analysis.html" class="home-route-card">
+            <span class="home-route-card__kicker mono">02</span>
+            <span class="home-route-card__title">Analysis</span>
+            <span class="home-route-card__desc">Repertoire atlas, clusters, caller context, and behavioral views — after you’ve cleaned your audio.</span>
+            <span class="home-route-card__arrow" aria-hidden="true">→</span>
+          </a>
+          <a href="contribute.html" class="home-route-card">
+            <span class="home-route-card__kicker mono">03</span>
+            <span class="home-route-card__title">Contribute</span>
+            <span class="home-route-card__desc">Share data, labels, or feedback — placeholder for upcoming workflows.</span>
+            <span class="home-route-card__arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <script src="js/hero.js"></script>
+</body>
+</html>

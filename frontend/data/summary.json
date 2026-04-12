@@ -1,0 +1,18 @@
+{
+  "n_calls": 989,
+  "n_clusters": 6,
+  "n_contexts": 15,
+  "n_elephants": 73,
+  "n_sessions": 320,
+  "context_accuracy": 0.5621853048248987,
+  "caller_accuracy": 0.49846153846153846,
+  "known_callers": 63,
+  "palette": [
+    "#4caf50",
+    "#7b1fa2",
+    "#e53935",
+    "#fdd835",
+    "#ff9800",
+    "#26a69a"
+  ]
+}

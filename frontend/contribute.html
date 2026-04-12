@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contribute · Tusk and Tidy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="min-h-screen">
+  <header class="topbar fixed top-0 inset-x-0 z-50 px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-y-3 gap-x-4">
+    <a href="index.html" class="topbar-wordmark shrink-0">Tusk and Tidy</a>
+    <div class="flex flex-wrap items-center justify-end gap-y-3 gap-x-6 md:gap-x-8 ml-auto">
+      <nav class="flex items-center gap-5 sm:gap-7">
+        <a href="index.html">Home</a>
+        <a href="cleanup.html">Cleanup</a>
+        <a href="analysis.html">Analysis</a>
+        <a href="contribute.html" class="active">Contribute</a>
+      </nav>
+      <div id="session-bar" class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] uppercase tracking-wider border-t border-[color:var(--border)] pt-3 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-6 sm:ml-0 w-full sm:w-auto justify-end">
+        <span id="session-role-pill" class="mono text-[color:var(--text-1)] whitespace-nowrap">Contributor</span>
+        <span class="text-[color:var(--text-3)] hidden sm:inline">·</span>
+        <span id="session-wallet-line" class="text-[color:var(--text-2)] mono text-[9px] sm:text-[10px] max-w-[140px] sm:max-w-none truncate">Wallet —</span>
+        <button type="button" id="session-wallet-btn" class="btn text-[9px] py-1 px-2 shrink-0">Connect</button>
+        <span id="session-bio-cluster" class="hidden flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span class="text-[color:var(--text-3)]">·</span>
+          <span id="session-bio-line" class="text-[color:var(--text-2)] text-[9px] sm:text-[10px] max-w-[160px] truncate">Bio —</span>
+          <button type="button" id="session-bio-btn" class="btn text-[9px] py-1 px-2 hidden">Sign out</button>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-28 pb-24 px-4 sm:px-8 lg:px-12 w-full max-w-[min(1400px,calc(100vw-1.5rem))] mx-auto">
+    <div class="text-center mb-8 max-w-3xl mx-auto">
+      <div class="label mb-2">OPEN SOURCE AUDIO</div>
+      <h1 class="text-2xl sm:text-3xl font-medium tracking-tight">Contribute recordings</h1>
+      <p class="text-sm sm:text-base text-[color:var(--text-1)] mt-4 leading-relaxed">
+        Connect a wallet, upload a WAV, and add training labels for your recording. Reviewers inspect submissions and, on approval, send the reward in SOL to your wallet.
+      </p>
+    </div>
+
+    <!-- Reward — subtle -->
+    <div id="contrib-reward-block" class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-1)]/80 px-4 py-3 sm:px-5 sm:py-4 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-6 text-left">
+      <div>
+        <div class="label mb-1 text-[color:var(--text-3)]">Reward when accepted</div>
+        <p id="reward-sol" class="text-lg sm:text-xl font-medium tabular-nums text-[color:var(--text-0)]">— SOL</p>
+      </div>
+      <p id="reward-meta" class="text-xs text-[color:var(--text-2)] sm:text-right sm:max-w-md leading-relaxed">Loading…</p>
+    </div>
+
+    <div id="role-switch-hint" class="hidden rounded-lg border border-[color:var(--accent-dim)] bg-[color:var(--bg-1)] px-4 py-3 text-sm text-[color:var(--text-1)] mb-8 flex flex-wrap items-center justify-between gap-3">
+      <span id="role-switch-hint-text">Connect your Phantom wallet to continue.</span>
+      <button type="button" id="role-switch-hint-dismiss" class="btn text-[10px] py-1.5 px-3 shrink-0">Dismiss</button>
+    </div>
+
+    <!-- Role switch -->
+    <div class="flex rounded-xl border border-[color:var(--border)] p-1 mb-10 bg-[color:var(--bg-1)] w-full max-w-2xl mx-auto">
+      <button type="button" id="tab-contributor" class="contrib-tab flex-1 py-3 text-xs sm:text-sm uppercase tracking-widest rounded-lg transition-colors bg-[color:var(--accent-glow)] text-[color:var(--accent)] border border-[color:var(--accent-dim)]">
+        Contributor
+      </button>
+      <button type="button" id="tab-biologist" class="contrib-tab flex-1 py-3 text-xs sm:text-sm uppercase tracking-widest rounded-lg transition-colors text-[color:var(--text-2)]">
+        Biologist
+      </button>
+    </div>
+
+    <!-- Contributor -->
+    <section id="panel-contributor" class="space-y-6 w-full">
+      <div id="wallet-none" class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-1)] p-6 sm:p-10 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div class="min-w-0 flex-1">
+          <div class="label mb-2">Step 1</div>
+          <p class="text-sm sm:text-base text-[color:var(--text-1)]">Connect Phantom on Solana devnet. Then you can upload a WAV and submit for review.</p>
+          <p id="phantom-hint" class="text-xs text-[color:var(--text-3)] mt-3 hidden">Install <a href="https://phantom.app" class="text-[color:var(--accent)] underline" target="_blank" rel="noopener">Phantom</a> and refresh.</p>
+        </div>
+        <button type="button" id="btn-connect" class="btn btn-primary w-full sm:w-auto shrink-0 justify-center px-8 py-3">Connect wallet</button>
+      </div>
+
+      <div id="wallet-connected" class="hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-1)] p-6 sm:p-10 w-full space-y-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="label mb-1">Connected wallet</div>
+            <p id="wallet-pubkey" class="text-xs sm:text-sm mono text-[color:var(--accent)] break-all"></p>
+          </div>
+          <button type="button" id="btn-disconnect" class="btn text-[10px] py-2 shrink-0">Disconnect</button>
+        </div>
+
+        <div id="wallet-stats-contrib" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-4 sm:p-5">
+          <div>
+            <div class="label mb-1">Balance (devnet)</div>
+            <p id="stat-contrib-sol" class="text-2xl font-semibold tabular-nums text-[color:var(--text-0)]">—</p>
+            <p class="text-[10px] text-[color:var(--text-3)] mt-1 mono" id="stat-contrib-lamports">— lamports</p>
+          </div>
+          <div>
+            <div class="label mb-1">Network</div>
+            <p id="stat-contrib-network" class="text-sm text-[color:var(--text-1)] font-medium">devnet</p>
+            <p class="text-[10px] text-[color:var(--text-3)] mt-1">Solana devnet</p>
+          </div>
+          <div>
+            <div class="label mb-1">Last updated</div>
+            <p id="stat-contrib-updated" class="text-sm text-[color:var(--text-2)] mono">—</p>
+          </div>
+          <div class="flex flex-col justify-end">
+            <a id="stat-contrib-explorer" href="#" target="_blank" rel="noopener" class="text-sm text-[color:var(--accent)] underline hidden">View on Explorer</a>
+          </div>
+        </div>
+
+        <div class="w-full border-t border-[color:var(--border)] pt-6 space-y-6">
+          <div>
+            <label class="label mb-2 block">WAV recording</label>
+            <input type="file" id="contrib-file" accept=".wav,audio/wav" class="block w-full text-sm text-[color:var(--text-2)] file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border file:border-[color:var(--border)] file:bg-[color:var(--bg-2)] file:text-[color:var(--text-0)]" />
+          </div>
+
+          <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)]/60 p-4 sm:p-5 space-y-4">
+            <div>
+              <div class="label mb-1">Ethogram &amp; recording metadata</div>
+              <p class="text-xs text-[color:var(--text-2)] leading-relaxed">Labels match the reference ethogram dataset. Pick context, then the call or behavior name; other fields use the same controlled vocabulary.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="label mb-1.5 block normal-case text-[11px]">Context <span class="text-[color:var(--risk-med)]">*</span></label>
+                <select id="meta-ethogram-context" required class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)]">
+                  <option value="">Loading…</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="label mb-1.5 block normal-case text-[11px]">Call / behavior name <span class="text-[color:var(--risk-med)]">*</span></label>
+                <select id="meta-ethogram-name" required class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)]">
+                  <option value="">Choose context first</option>
+                </select>
+              </div>
+              <div>
+                <label class="label mb-1.5 block normal-case text-[11px]">Gender <span class="text-[color:var(--risk-med)]">*</span></label>
+                <select id="meta-gender" required class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)]">
+                  <option value="">—</option>
+                </select>
+              </div>
+              <div>
+                <label class="label mb-1.5 block normal-case text-[11px]">Age / life stage <span class="text-[color:var(--risk-med)]">*</span></label>
+                <select id="meta-age" required class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)]">
+                  <option value="">—</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="label mb-1.5 block normal-case text-[11px]">Recording mode <span class="text-[color:var(--risk-med)]">*</span></label>
+                <select id="meta-mode" required class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)]">
+                  <option value="">—</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="label mb-1.5 block normal-case text-[11px]">Clip duration <span class="text-[color:var(--risk-med)]">*</span></label>
+              <select id="meta-duration" class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)]">
+                <option value="">—</option>
+                <option value="Under 30 seconds">Under 30 seconds</option>
+                <option value="30 seconds – 1 minute">30 seconds – 1 minute</option>
+                <option value="1 – 3 minutes">1 – 3 minutes</option>
+                <option value="3 – 5 minutes">3 – 5 minutes</option>
+                <option value="Over 5 minutes">Over 5 minutes</option>
+                <option value="__other__">Other (specify below)</option>
+              </select>
+              <input type="text" id="meta-duration-other" maxlength="200" placeholder="Describe duration (only if you chose Other)" class="mt-2 w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)] placeholder:text-[color:var(--text-3)] hidden" />
+            </div>
+            <div>
+              <label class="label mb-1.5 block normal-case text-[11px]">Site &amp; conditions <span class="text-[color:var(--text-3)] font-normal">(optional)</span></label>
+              <textarea id="meta-situation" rows="2" maxlength="2000" placeholder="Habitat, distance, weather, time of day…" class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)] placeholder:text-[color:var(--text-3)]"></textarea>
+            </div>
+            <div>
+              <label class="label mb-1.5 block normal-case text-[11px]">Sounds by part of the clip <span class="text-[color:var(--text-3)] font-normal">(optional)</span></label>
+              <textarea id="meta-sounds" rows="3" maxlength="4000" placeholder="e.g. 0:00–0:20 rumble; 0:20–0:45 trumpet; background insects" class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)] placeholder:text-[color:var(--text-3)]"></textarea>
+            </div>
+            <div>
+              <label class="label mb-1.5 block normal-case text-[11px]">Extra note <span class="text-[color:var(--text-3)] font-normal">(optional)</span></label>
+              <textarea id="contrib-note" rows="2" maxlength="2000" placeholder="Gear, gain, anything else useful" class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2 text-sm text-[color:var(--text-0)] placeholder:text-[color:var(--text-3)]"></textarea>
+            </div>
+          </div>
+
+          <button type="button" id="btn-submit" class="btn btn-primary w-full justify-center py-3">Submit for review</button>
+          <p id="contrib-msg" class="text-sm sm:text-base font-medium min-h-[1.5rem]"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Biologist: sign in first; wallet + queue only after -->
+    <section id="panel-biologist" class="hidden w-full space-y-8">
+      <div id="bio-login-wrap" class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-1)] p-6 sm:p-10 w-full max-w-2xl mx-auto">
+        <div class="label mb-2 text-center">Reviewer sign-in</div>
+        <p class="text-sm text-[color:var(--text-1)] mb-6 text-center">Sign in to open the review queue. Connect your wallet after signing in to review balances and approve payouts.</p>
+        <div class="grid sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+          <div>
+            <label class="label mb-2 block">Username</label>
+            <input type="text" id="bio-username" placeholder="Username" autocomplete="username" class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2.5 text-sm" />
+          </div>
+          <div>
+            <label class="label mb-2 block">Password</label>
+            <input type="password" id="bio-password" placeholder="Password" autocomplete="current-password" class="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--bg-0)] px-3 py-2.5 text-sm" />
+          </div>
+        </div>
+        <button type="button" id="bio-login-btn" class="btn btn-primary w-full max-w-xs mx-auto flex justify-center mt-8 py-3">Sign in</button>
+        <p id="bio-login-msg" class="text-sm text-[color:var(--risk-crit)] mt-4 text-center hidden"></p>
+      </div>
+
+      <div id="bio-after-login" class="hidden w-full space-y-8">
+        <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-1)] p-6 sm:p-10 w-full">
+          <div class="label mb-2">Wallet (devnet)</div>
+          <p class="text-sm text-[color:var(--text-1)] mb-5">Connect Phantom to view balance and sign reward transfers on devnet.</p>
+          <div id="bio-wallet-none" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p class="text-sm text-[color:var(--text-2)]">Connect your wallet to view devnet SOL stats while reviewing.</p>
+            <button type="button" id="btn-bio-connect" class="btn btn-primary shrink-0 justify-center px-8 py-3">Connect wallet</button>
+          </div>
+          <p id="bio-phantom-hint" class="text-xs text-[color:var(--text-3)] mt-3 hidden">Install <a href="https://phantom.app" class="text-[color:var(--accent)] underline" target="_blank" rel="noopener">Phantom</a> and refresh.</p>
+
+          <div id="bio-wallet-connected" class="hidden mt-4 space-y-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="label mb-1">Connected wallet</div>
+                <p id="bio-wallet-pubkey" class="text-xs sm:text-sm mono text-[color:var(--accent)] break-all"></p>
+              </div>
+              <button type="button" id="btn-bio-disconnect" class="btn text-[10px] py-2 shrink-0">Disconnect</button>
+            </div>
+            <div id="wallet-stats-bio" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-4 sm:p-5">
+              <div>
+                <div class="label mb-1">Balance (devnet)</div>
+                <p id="stat-bio-sol" class="text-2xl font-semibold tabular-nums text-[color:var(--text-0)]">—</p>
+                <p class="text-[10px] text-[color:var(--text-3)] mt-1 mono" id="stat-bio-lamports">— lamports</p>
+              </div>
+              <div>
+                <div class="label mb-1">Network</div>
+                <p id="stat-bio-network" class="text-sm text-[color:var(--text-1)] font-medium">devnet</p>
+                <p class="text-[10px] text-[color:var(--text-3)] mt-1">Solana devnet</p>
+              </div>
+              <div>
+                <div class="label mb-1">Last updated</div>
+                <p id="stat-bio-updated" class="text-sm text-[color:var(--text-2)] mono">—</p>
+              </div>
+              <div class="flex flex-col justify-end">
+                <a id="stat-bio-explorer" href="#" target="_blank" rel="noopener" class="text-sm text-[color:var(--accent)] underline hidden">View on Explorer</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="bio-dashboard" class="w-full space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4 w-full border-b border-[color:var(--border)] pb-4">
+            <div>
+              <span class="label">Review queue</span>
+              <p id="bio-user-label" class="text-sm text-[color:var(--text-1)] mt-1"></p>
+              <p class="text-xs text-[color:var(--text-3)] mt-2">Open a card to read full metadata and listen before you accept or decline.</p>
+            </div>
+            <button type="button" id="bio-logout-btn" class="btn text-[10px] py-2">Sign out</button>
+          </div>
+          <div id="bio-list" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 w-full"></div>
+          <p id="bio-empty" class="text-sm text-[color:var(--text-2)] text-center py-12 hidden w-full">No submissions to show.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Submission detail (reviewer) -->
+  <div id="submission-detail-modal" class="fixed inset-0 z-[100] hidden" aria-hidden="true">
+    <button type="button" id="submission-modal-backdrop" class="absolute inset-0 bg-black/70 backdrop-blur-sm border-0 cursor-default w-full h-full" aria-label="Close"></button>
+    <div class="absolute inset-3 sm:inset-8 md:inset-12 flex items-center justify-center pointer-events-none p-2">
+      <div class="pointer-events-auto w-full max-w-2xl max-h-[min(92vh,900px)] overflow-y-auto rounded-2xl border border-[color:var(--accent-dim)] bg-[color:var(--bg-1)] shadow-[0_0_0_1px_rgba(125,211,252,0.08),0_24px_80px_-12px_rgba(0,0,0,0.65)]">
+        <div class="relative p-6 sm:p-8 border-b border-[color:var(--border)] bg-gradient-to-br from-[color:var(--accent-glow)]/40 to-transparent">
+          <div class="flex justify-between items-start gap-4">
+            <div>
+              <div class="label mb-2 text-[color:var(--accent)]">Submission</div>
+              <p id="modal-sub-id" class="text-lg font-medium text-[color:var(--text-0)] mono tracking-tight"></p>
+              <p id="modal-sub-badge" class="text-[10px] uppercase tracking-widest mt-2 text-[color:var(--text-2)]"></p>
+            </div>
+            <button type="button" id="submission-modal-close" class="btn text-[10px] py-2 shrink-0">Close</button>
+          </div>
+        </div>
+        <div class="p-6 sm:p-8 space-y-6">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-3 sm:col-span-2">
+              <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-1">Context</div>
+              <p id="modal-meta-ethogram-context" class="text-sm text-[color:var(--text-0)] font-medium">—</p>
+            </div>
+            <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-3 sm:col-span-2">
+              <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-1">Call / behavior</div>
+              <p id="modal-meta-ethogram-name" class="text-sm text-[color:var(--text-0)] font-medium">—</p>
+            </div>
+            <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-3">
+              <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-1">Gender</div>
+              <p id="modal-meta-sex" class="text-sm text-[color:var(--text-0)] font-medium">—</p>
+            </div>
+            <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-3">
+              <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-1">Age</div>
+              <p id="modal-meta-age" class="text-sm text-[color:var(--text-0)] font-medium">—</p>
+            </div>
+            <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-3 sm:col-span-2">
+              <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-1">Recording mode</div>
+              <p id="modal-meta-mode" class="text-sm text-[color:var(--text-0)] font-medium mono">—</p>
+            </div>
+            <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-3 sm:col-span-2">
+              <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-1">Duration</div>
+              <p id="modal-meta-duration" class="text-sm text-[color:var(--text-0)] font-medium mono">—</p>
+            </div>
+          </div>
+          <div>
+            <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-2">Site &amp; conditions</div>
+            <p id="modal-meta-situation" class="text-sm text-[color:var(--text-1)] leading-relaxed whitespace-pre-wrap"></p>
+          </div>
+          <div>
+            <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-2">Sounds by segment</div>
+            <div id="modal-meta-sounds" class="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-0)] p-4 text-sm mono text-[color:var(--text-1)] whitespace-pre-wrap leading-relaxed min-h-[3rem]"></div>
+          </div>
+          <div>
+            <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-2">Contributor wallet</div>
+            <p id="modal-meta-wallet" class="text-xs mono text-[color:var(--accent)] break-all"></p>
+          </div>
+          <div id="modal-meta-note-wrap" class="hidden">
+            <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-2">Extra note</div>
+            <p id="modal-meta-note" class="text-sm text-[color:var(--text-2)] whitespace-pre-wrap"></p>
+          </div>
+          <div id="modal-audio-wrap" class="hidden">
+            <div class="text-[9px] uppercase tracking-wider text-[color:var(--text-3)] mb-2">Audio</div>
+            <audio id="modal-audio" controls class="w-full h-10 rounded-lg"></audio>
+          </div>
+          <div id="modal-no-audio" class="hidden text-sm text-[color:var(--text-3)] italic">No audio attachment for this entry.</div>
+        </div>
+        <div id="modal-actions" class="p-6 sm:p-8 pt-0 flex flex-wrap gap-3 justify-end border-t border-[color:var(--border)]/80">
+          <button type="button" id="modal-btn-reject" class="btn border border-[color:var(--border)] text-[10px] py-2.5 px-5">Decline</button>
+          <button type="button" id="modal-btn-accept" class="btn btn-primary text-[10px] py-2.5 px-5">Accept &amp; pay reward</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-screen acceptance feedback (after approve / mock approve) -->
+  <div id="accept-celebration-root" class="accept-celebration-overlay hidden" aria-hidden="true" role="dialog" aria-labelledby="accept-celebration-title">
+    <div class="accept-celebration-card">
+      <div class="accept-celebration-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+      </div>
+      <h2 id="accept-celebration-title" class="accept-celebration-title">Accepted</h2>
+      <p id="accept-celebration-sub" class="accept-celebration-sub"></p>
+      <div class="accept-celebration-actions">
+        <a id="accept-celebration-explorer" href="#" target="_blank" rel="noopener" class="hidden">View on Solana Explorer</a>
+        <button type="button" id="accept-celebration-dismiss" class="accept-celebration-dismiss">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/contribute.js"></script>
+</body>
+</html>

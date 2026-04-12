@@ -1,0 +1,36 @@
+{
+  "contexts": [
+    "Social Play",
+    "Advertisement & Attraction",
+    "Courtship",
+    "Affiliative",
+    "Attacking & Mobbing",
+    "Movement Space & Leadership",
+    "Conflict & Confrontation",
+    "Calf Nourishment & Weaning",
+    "Calf Reassurance & Protection",
+    "Novel & Idiosyncratic",
+    "Protest & Distress",
+    "Aggressive",
+    "Coalition Building",
+    "Foraging & Comfort Technique",
+    "Maintenance"
+  ],
+  "counts": [
+    170,
+    117,
+    109,
+    94,
+    89,
+    77,
+    62,
+    59,
+    53,
+    45,
+    42,
+    41,
+    17,
+    7,
+    7
+  ]
+}
