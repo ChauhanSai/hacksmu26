@@ -24,8 +24,8 @@ def download_data(url, title=None):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-# input = [("url", "context", "name", "mode", "age", "gender")]
-input = [("https://vimeo.com/360485669", "context", "name", "mode", "age", "gender", "description")]
+# input = [("url", "name", "context", "age", "gender", "description", "mode")]
+input = [("https://vimeo.com/360485669", "name", "context", "age", "gender", "description", "mode")]
 inputCsv = "input.csv"
 
 if os.path.isfile(inputCsv):
@@ -46,7 +46,7 @@ file_exists = os.path.isfile(outputCsv)
 with open(outputCsv, mode='a', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
     if not file_exists:
-        writer.writerow(['file_name', 'name', 'context', 'mode', 'age', 'gender', 'url', 'description'])
+        writer.writerow(['file_name', 'name', 'context', 'age', 'gender', 'description', 'url', 'mode'])
 
     for tuple in input:
         print(tuple)
@@ -69,4 +69,4 @@ with open(outputCsv, mode='a', newline='', encoding='utf-8') as f:
 
         downloaded_urls[url] = title
 
-        writer.writerow([title, name, context, mode, age, gender, url, description])
+        writer.writerow([title, name, context, age, gender, description, url, mode])
