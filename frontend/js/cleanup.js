@@ -1,12 +1,13 @@
 /**
  * Audio Cleanup Terminal — Frontend Logic
- * Handles file upload, API communication, and results display
+ * Two-phase UI: upload-only, then full-page results.
  */
 
 const API_BASE = 'http://127.0.0.1:5000';
 
-// DOM Elements
 const form = document.getElementById('cleanup-form');
+const phaseUpload = document.getElementById('phase-upload');
+const phaseResults = document.getElementById('phase-results');
 const audioInput = document.getElementById('audio-input');
 const dropzone = document.getElementById('dropzone');
 const selectedFile = document.getElementById('selected-file');
@@ -16,59 +17,181 @@ const clearFile = document.getElementById('clear-file');
 const processBtn = document.getElementById('process-btn');
 const processing = document.getElementById('processing');
 const progressBar = document.getElementById('progress-bar');
+const progressPercent = document.getElementById('progress-percent');
 const progressStatus = document.getElementById('progress-status');
 const errorPanel = document.getElementById('error-panel');
 const errorMessage = document.getElementById('error-message');
-const resultsEmpty = document.getElementById('results-empty');
-const resultsContent = document.getElementById('results-content');
 const summaryText = document.getElementById('summary-text');
 const beforeSpectrogram = document.getElementById('before-spectrogram');
 const afterSpectrogram = document.getElementById('after-spectrogram');
 const segmentsSection = document.getElementById('segments-section');
 const timelineContainer = document.getElementById('timeline-container');
+const timelineAxis = document.getElementById('timeline-axis');
+const segmentsDurationHint = document.getElementById('segments-duration-hint');
 const segmentsList = document.getElementById('segments-list');
 const cleanedAudio = document.getElementById('cleaned-audio');
 const playbackStatus = document.getElementById('playback-status');
 const downloadAudio = document.getElementById('download-audio');
 const downloadSpectrogram = document.getElementById('download-spectrogram');
+const newUploadBtn = document.getElementById('new-upload-btn');
+const audioPlayBtn = document.getElementById('audio-play-btn');
+const audioIconPlay = document.getElementById('audio-icon-play');
+const audioIconPause = document.getElementById('audio-icon-pause');
+const audioSeekWrap = document.getElementById('audio-seek-wrap');
+const audioSeekBar = document.getElementById('audio-seek-bar');
+const audioSeekFill = document.getElementById('audio-seek-fill');
+const audioTimeCurrent = document.getElementById('audio-time-current');
+const audioTimeDuration = document.getElementById('audio-time-duration');
+const processingHeadline = document.getElementById('processing-headline');
+
+/** Labels must stay in sync with `#pipeline-steps` in cleanup.html */
+const PIPELINE_STEPS = [
+  { title: 'Upload & ingest', detail: 'Load WAV and validate' },
+  { title: 'Input spectrogram', detail: 'Time–frequency view of raw audio' },
+  { title: 'Rumble detection', detail: '8–180 Hz candidate windows' },
+  { title: 'Noise profile', detail: 'Estimate background from non-rumble regions' },
+  { title: 'Spectral cleanup', detail: 'Subtraction + tonal notch filters' },
+  { title: 'Export assets', detail: 'Clean WAV + before/after spectrograms' },
+];
+
+const PIPELINE_MS_PER_STEP = 2200;
 
 let currentFile = null;
 let segments = [];
+let seekPointerActive = false;
+let pipelineStepTimer = null;
+let pipelineStepEls = null;
 
-// Format file size
+function getPipelineStepEls() {
+  if (!pipelineStepEls) {
+    pipelineStepEls = Array.from(document.querySelectorAll('#pipeline-steps .pipeline-step'));
+  }
+  return pipelineStepEls;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function clearPipelineTimer() {
+  if (pipelineStepTimer) {
+    clearInterval(pipelineStepTimer);
+    pipelineStepTimer = null;
+  }
+}
+
+function resetPipelineStepsUI() {
+  clearPipelineTimer();
+  getPipelineStepEls().forEach((el) => {
+    el.classList.remove('pipeline-step--active', 'pipeline-step--done');
+    el.classList.add('pipeline-step--pending');
+  });
+}
+
+function setPipelineActiveStep(activeIndex) {
+  const els = getPipelineStepEls();
+  els.forEach((el, i) => {
+    el.classList.remove('pipeline-step--active', 'pipeline-step--done', 'pipeline-step--pending');
+    if (i < activeIndex) el.classList.add('pipeline-step--done');
+    else if (i === activeIndex) el.classList.add('pipeline-step--active');
+    else el.classList.add('pipeline-step--pending');
+  });
+}
+
+function completePipelineSteps() {
+  getPipelineStepEls().forEach((el) => {
+    el.classList.remove('pipeline-step--active', 'pipeline-step--pending');
+    el.classList.add('pipeline-step--done');
+  });
+}
+
+function pipelineStatusLine(i) {
+  const s = PIPELINE_STEPS[i];
+  return `${s.title} — ${s.detail}`;
+}
+
+function pipelineProgressPercent(stepIndex) {
+  return 5 + ((stepIndex + 1) / PIPELINE_STEPS.length) * 75;
+}
+
 function formatBytes(bytes) {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 
-// Handle file selection
+function formatTimeSeconds(s) {
+  if (!Number.isFinite(s) || s < 0) return '0.00 s';
+  if (s < 60) return `${s.toFixed(2)} s`;
+  const m = Math.floor(s / 60);
+  const sec = s - m * 60;
+  return `${m}:${sec < 10 ? '0' : ''}${sec.toFixed(1)}`;
+}
+
+function formatPlayerClock(sec) {
+  if (!Number.isFinite(sec) || sec < 0) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function syncPlayerUi() {
+  const el = cleanedAudio;
+  const dur = el.duration;
+  const cur = el.currentTime;
+  if (audioTimeCurrent) audioTimeCurrent.textContent = formatPlayerClock(cur);
+  if (audioTimeDuration) {
+    audioTimeDuration.textContent = Number.isFinite(dur) ? formatPlayerClock(dur) : '0:00';
+  }
+  if (audioSeekFill && Number.isFinite(dur) && dur > 0) {
+    audioSeekFill.style.width = `${(cur / dur) * 100}%`;
+  }
+  if (audioSeekBar) {
+    const pct = Number.isFinite(dur) && dur > 0 ? Math.round((cur / dur) * 100) : 0;
+    audioSeekBar.setAttribute('aria-valuenow', String(pct));
+  }
+}
+
+function setPlayerPlaying(playing) {
+  if (!audioIconPlay || !audioIconPause || !audioPlayBtn) return;
+  audioIconPlay.classList.toggle('hidden', playing);
+  audioIconPause.classList.toggle('hidden', !playing);
+  audioPlayBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+}
+
+function seekFromClientX(clientX) {
+  if (!audioSeekBar || !Number.isFinite(cleanedAudio.duration) || cleanedAudio.duration <= 0) return;
+  const rect = audioSeekBar.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  cleanedAudio.currentTime = ratio * cleanedAudio.duration;
+  syncPlayerUi();
+}
+
 function handleFileSelect(file) {
   if (!file) return;
-  
+
   if (!file.name.toLowerCase().endsWith('.wav')) {
     showError('Only WAV audio files are supported.');
     return;
   }
-  
+
   if (file.size > 200 * 1024 * 1024) {
     showError('File size exceeds 200 MB limit.');
     return;
   }
-  
+
   currentFile = file;
   fileName.textContent = file.name;
   fileSize.textContent = formatBytes(file.size);
-  
+
   dropzone.classList.add('hidden');
   selectedFile.classList.remove('hidden');
   processBtn.disabled = false;
   hideError();
 }
 
-// Clear selected file
 function clearSelectedFile() {
   currentFile = null;
   audioInput.value = '';
@@ -77,192 +200,289 @@ function clearSelectedFile() {
   processBtn.disabled = true;
 }
 
-// Show error
 function showError(message) {
   errorMessage.textContent = message;
   errorPanel.classList.remove('hidden');
 }
 
-// Hide error
 function hideError() {
   errorPanel.classList.add('hidden');
 }
 
-// Update progress
 function updateProgress(percent, status) {
-  progressBar.style.width = `${percent}%`;
+  const p = Math.min(100, Math.max(0, percent));
+  progressBar.style.width = `${p}%`;
+  if (progressPercent) progressPercent.textContent = `${Math.round(p)}%`;
   progressStatus.textContent = status;
 }
 
-// Show processing state
 function showProcessing() {
   processing.classList.remove('hidden');
   processBtn.disabled = true;
-  updateProgress(0, 'Uploading audio file...');
+  if (processingHeadline) processingHeadline.textContent = 'Live pipeline';
+  resetPipelineStepsUI();
+  setPipelineActiveStep(0);
+  updateProgress(5, pipelineStatusLine(0));
 }
 
-// Hide processing state
 function hideProcessing() {
+  clearPipelineTimer();
   processing.classList.add('hidden');
-  processBtn.disabled = false;
+  processBtn.disabled = !currentFile;
+  if (processingHeadline) processingHeadline.textContent = 'Pipeline';
 }
 
-// Render segments on timeline
+function renderTimelineAxis(duration) {
+  if (!timelineAxis) return;
+  timelineAxis.innerHTML = '';
+  const dur = Math.max(duration || 0, 1e-6);
+  const steps = 5;
+  for (let i = 0; i <= steps; i++) {
+    const t = (dur * i) / steps;
+    const span = document.createElement('span');
+    span.textContent = formatTimeSeconds(t);
+    timelineAxis.appendChild(span);
+  }
+}
+
 function renderSegments(segs, duration) {
   segments = segs;
-  
+
   if (!segs || segs.length === 0) {
     segmentsSection.classList.add('hidden');
     return;
   }
-  
+
   segmentsSection.classList.remove('hidden');
-  
-  // Clear previous
+  if (segmentsDurationHint) {
+    segmentsDurationHint.textContent = `${segs.length} window${segs.length === 1 ? '' : 's'} · ${formatTimeSeconds(duration)} total`;
+  }
+
+  renderTimelineAxis(duration);
+
   timelineContainer.innerHTML = '';
   segmentsList.innerHTML = '';
-  
-  // Render timeline bars
+
+  const dur = Math.max(duration, 1e-6);
+
   segs.forEach((seg, i) => {
-    const startPct = (seg.start / duration) * 100;
-    const widthPct = Math.max(((seg.end - seg.start) / duration) * 100, 0.5);
-    
+    const startPct = (seg.start / dur) * 100;
+    const widthPct = Math.max(((seg.end - seg.start) / dur) * 100, 0.35);
+    const name = seg.label || `Rumble ${i + 1}`;
+    const spanSec = Math.max(0, seg.end - seg.start);
+
     const bar = document.createElement('div');
-    bar.className = 'absolute h-full bg-[color:var(--accent)] opacity-60 rounded';
+    bar.className =
+      'absolute top-0 bottom-0 rounded-sm bg-[color:var(--accent)] opacity-70 transition-opacity duration-200';
     bar.style.left = `${startPct}%`;
     bar.style.width = `${widthPct}%`;
-    bar.dataset.index = i;
+    bar.dataset.index = String(i);
+    bar.title = `${name} · ${spanSec.toFixed(2)}s · ${seg.start.toFixed(2)}s–${seg.end.toFixed(2)}s`;
     timelineContainer.appendChild(bar);
-    
-    // Render pill
-    const pill = document.createElement('span');
-    pill.className = 'tag tag-teal cursor-pointer transition-all hover:bg-[color:var(--accent-glow)]';
-    pill.textContent = `Rumble ${i + 1}: ${seg.start.toFixed(2)}s – ${seg.end.toFixed(2)}s`;
-    pill.dataset.index = i;
-    pill.addEventListener('click', () => {
+
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'cleanup-segment-row';
+    row.dataset.index = String(i);
+
+    const typeEl = document.createElement('span');
+    typeEl.className = 'cleanup-segment-row__type';
+    typeEl.textContent = name;
+
+    const timeWrap = document.createElement('div');
+    timeWrap.className = 'cleanup-segment-row__meta';
+    const timeEl = document.createElement('span');
+    timeEl.className = 'cleanup-segment-row__time mono';
+    timeEl.textContent = `${seg.start.toFixed(2)}s – ${seg.end.toFixed(2)}s`;
+    const durEl = document.createElement('span');
+    durEl.className = 'cleanup-segment-row__dur';
+    durEl.textContent = `${spanSec.toFixed(2)} s span`;
+    timeWrap.appendChild(timeEl);
+    timeWrap.appendChild(durEl);
+
+    const goEl = document.createElement('span');
+    goEl.className = 'cleanup-segment-row__go';
+    goEl.textContent = 'Jump';
+
+    row.appendChild(typeEl);
+    row.appendChild(timeWrap);
+    row.appendChild(goEl);
+
+    row.addEventListener('click', () => {
       cleanedAudio.currentTime = seg.start;
       cleanedAudio.play();
     });
-    segmentsList.appendChild(pill);
+    segmentsList.appendChild(row);
   });
 }
 
-// Update playback status
 function updatePlaybackStatus() {
+  syncPlayerUi();
   const current = cleanedAudio.currentTime;
   let activeSegment = null;
-  
+
   segments.forEach((seg, i) => {
     const bars = timelineContainer.querySelectorAll(`[data-index="${i}"]`);
     const pills = segmentsList.querySelectorAll(`[data-index="${i}"]`);
     const isActive = current >= seg.start && current <= seg.end;
-    
-    bars.forEach(bar => {
+
+    bars.forEach((bar) => {
       bar.classList.toggle('opacity-100', isActive);
-      bar.classList.toggle('opacity-60', !isActive);
+      bar.classList.toggle('opacity-70', !isActive);
     });
-    
-    pills.forEach(pill => {
-      pill.classList.toggle('tag-purple', isActive);
-      pill.classList.toggle('tag-teal', !isActive);
+
+    pills.forEach((pill) => {
+      pill.classList.toggle('cleanup-segment-row--active', isActive);
     });
-    
+
     if (isActive) activeSegment = i + 1;
   });
-  
+
   if (activeSegment) {
-    playbackStatus.textContent = `Current: Rumble ${activeSegment} · ${current.toFixed(1)}s`;
+    const seg = segments[activeSegment - 1];
+    const name = seg.label || `Rumble ${activeSegment}`;
+    playbackStatus.textContent = `Playing · ${name} · ${current.toFixed(1)}s`;
   } else {
-    playbackStatus.textContent = `Position: ${current.toFixed(1)}s (outside rumble windows)`;
+    playbackStatus.textContent = `Position ${current.toFixed(1)}s (outside detected windows)`;
   }
 }
 
-// Display results
+function showResultsPhase() {
+  phaseUpload.classList.add('cleanup-phase-leave');
+  window.setTimeout(() => {
+    hideProcessing();
+    phaseUpload.classList.add('hidden');
+    phaseUpload.classList.remove('cleanup-phase-leave');
+    phaseResults.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        phaseResults.classList.remove('opacity-0');
+        phaseResults.classList.add('cleanup-phase-enter-active');
+      });
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 280);
+}
+
+function showUploadPhase() {
+  phaseResults.classList.remove('cleanup-phase-enter-active');
+  phaseResults.classList.add('opacity-0');
+  window.setTimeout(() => {
+    phaseResults.classList.add('hidden');
+    phaseUpload.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      phaseUpload.classList.remove('opacity-0');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 200);
+}
+
 function displayResults(data) {
-  resultsEmpty.classList.add('hidden');
-  resultsContent.classList.remove('hidden');
-  
-  // Summary
-  summaryText.textContent = data.summary_line || 'Audio processed successfully.';
-  
-  // Spectrograms
+  summaryText.textContent = data.summary_line || 'Processing complete.';
+
   beforeSpectrogram.src = data.before_image_url;
   afterSpectrogram.src = data.after_image_url;
   downloadSpectrogram.href = data.after_image_url;
-  
-  // Audio
+
   cleanedAudio.src = data.audio_url;
   downloadAudio.href = data.audio_url;
   downloadAudio.download = data.audio_download_name || 'cleaned_audio.wav';
-  
-  // Duration
+
   const duration = parseFloat(data.duration_seconds) || 0;
   playbackStatus.textContent = `Duration: ${duration.toFixed(2)}s`;
-  
-  // Segments
-  const segs = (data.segments || []).map(s => ({
+  setPlayerPlaying(false);
+  syncPlayerUi();
+
+  const segs = (data.segments || []).map((s) => ({
     start: parseFloat(s.start),
-    end: parseFloat(s.end)
+    end: parseFloat(s.end),
+    label: typeof s.label === 'string' ? s.label : null,
   }));
   renderSegments(segs, duration);
+
+  showResultsPhase();
 }
 
-// Reset results
-function resetResults() {
-  resultsEmpty.classList.remove('hidden');
-  resultsContent.classList.add('hidden');
+function resetResultsView() {
+  cleanedAudio.pause();
+  cleanedAudio.removeAttribute('src');
+  beforeSpectrogram.removeAttribute('src');
+  afterSpectrogram.removeAttribute('src');
+  downloadAudio.removeAttribute('href');
+  downloadSpectrogram.removeAttribute('href');
+  segmentsList.innerHTML = '';
+  timelineContainer.innerHTML = '';
+  if (timelineAxis) timelineAxis.innerHTML = '';
+  segments = [];
+  segmentsSection.classList.add('hidden');
+  setPlayerPlaying(false);
+  if (audioSeekFill) audioSeekFill.style.width = '0%';
+  if (audioTimeCurrent) audioTimeCurrent.textContent = '0:00';
+  if (audioTimeDuration) audioTimeDuration.textContent = '0:00';
 }
 
-// Process audio
 async function processAudio() {
   if (!currentFile) return;
-  
+
   showProcessing();
   hideError();
-  resetResults();
-  
+
+  let stepIdx = 0;
+
+  pipelineStepTimer = window.setInterval(() => {
+    if (stepIdx < PIPELINE_STEPS.length - 1) {
+      stepIdx += 1;
+      setPipelineActiveStep(stepIdx);
+      updateProgress(pipelineProgressPercent(stepIdx), pipelineStatusLine(stepIdx));
+    } else {
+      clearPipelineTimer();
+    }
+  }, PIPELINE_MS_PER_STEP);
+
   const formData = new FormData();
   formData.append('audio', currentFile);
-  
+
   try {
-    updateProgress(20, 'Generating spectrogram...');
-    
     const response = await fetch(`${API_BASE}/api/clean`, {
       method: 'POST',
-      body: formData
+      body: formData,
     });
-    
-    updateProgress(60, 'Cleaning audio...');
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || `Server error: ${response.status}`);
     }
-    
-    updateProgress(80, 'Generating results...');
-    
+
     const data = await response.json();
-    
+
     if (data.error) {
       throw new Error(data.error);
     }
-    
-    updateProgress(100, 'Complete!');
-    
-    // Small delay for visual feedback
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+
+    clearPipelineTimer();
+
+    while (stepIdx < PIPELINE_STEPS.length - 1) {
+      stepIdx += 1;
+      setPipelineActiveStep(stepIdx);
+      updateProgress(pipelineProgressPercent(stepIdx), pipelineStatusLine(stepIdx));
+      await sleep(160);
+    }
+
+    completePipelineSteps();
+    updateProgress(100, 'Complete — opening results');
+    await sleep(480);
+
+    hideProcessing();
     displayResults(data);
-    hideProcessing();
-    
   } catch (error) {
+    clearPipelineTimer();
+    resetPipelineStepsUI();
     hideProcessing();
-    showError(error.message || 'Failed to process audio. Make sure the backend server is running.');
+    showError(error.message || 'Failed to process audio. Is the backend running?');
     console.error('Processing error:', error);
   }
 }
 
-// Event listeners
 audioInput.addEventListener('change', (e) => {
   handleFileSelect(e.target.files[0]);
 });
@@ -274,7 +494,13 @@ form.addEventListener('submit', (e) => {
   processAudio();
 });
 
-// Drag and drop
+newUploadBtn.addEventListener('click', () => {
+  resetResultsView();
+  clearSelectedFile();
+  hideError();
+  showUploadPhase();
+});
+
 dropzone.addEventListener('dragover', (e) => {
   e.preventDefault();
   dropzone.classList.add('border-[color:var(--accent)]', 'bg-[color:var(--glass)]');
@@ -291,11 +517,76 @@ dropzone.addEventListener('drop', (e) => {
   if (file) handleFileSelect(file);
 });
 
-// Audio playback events
 cleanedAudio.addEventListener('timeupdate', updatePlaybackStatus);
 cleanedAudio.addEventListener('seeked', updatePlaybackStatus);
-cleanedAudio.addEventListener('play', updatePlaybackStatus);
-cleanedAudio.addEventListener('pause', updatePlaybackStatus);
-cleanedAudio.addEventListener('loadedmetadata', () => {
-  playbackStatus.textContent = `Duration: ${cleanedAudio.duration.toFixed(2)}s`;
+cleanedAudio.addEventListener('play', () => {
+  setPlayerPlaying(true);
+  updatePlaybackStatus();
 });
+cleanedAudio.addEventListener('pause', () => {
+  setPlayerPlaying(false);
+  updatePlaybackStatus();
+});
+cleanedAudio.addEventListener('ended', () => {
+  setPlayerPlaying(false);
+  syncPlayerUi();
+  updatePlaybackStatus();
+});
+cleanedAudio.addEventListener('loadedmetadata', () => {
+  const d = cleanedAudio.duration;
+  if (Number.isFinite(d)) {
+    playbackStatus.textContent = `Duration: ${d.toFixed(2)}s`;
+  }
+  syncPlayerUi();
+});
+
+if (audioPlayBtn) {
+  audioPlayBtn.addEventListener('click', () => {
+    if (cleanedAudio.paused) {
+      cleanedAudio.play().catch(() => {});
+    } else {
+      cleanedAudio.pause();
+    }
+  });
+}
+
+if (audioSeekWrap && audioSeekBar) {
+  audioSeekWrap.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    seekPointerActive = true;
+    try {
+      audioSeekWrap.setPointerCapture(e.pointerId);
+    } catch (_) {
+      /* ignore */
+    }
+    seekFromClientX(e.clientX);
+  });
+  audioSeekWrap.addEventListener('pointermove', (e) => {
+    if (!seekPointerActive) return;
+    seekFromClientX(e.clientX);
+  });
+  audioSeekWrap.addEventListener('pointerup', (e) => {
+    seekPointerActive = false;
+    try {
+      audioSeekWrap.releasePointerCapture(e.pointerId);
+    } catch (_) {
+      /* ignore */
+    }
+  });
+  audioSeekWrap.addEventListener('pointercancel', () => {
+    seekPointerActive = false;
+  });
+  audioSeekBar.addEventListener('keydown', (e) => {
+    const dur = cleanedAudio.duration;
+    if (!Number.isFinite(dur) || dur <= 0) return;
+    const step = 5;
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      cleanedAudio.currentTime = Math.min(dur, cleanedAudio.currentTime + step);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      cleanedAudio.currentTime = Math.max(0, cleanedAudio.currentTime - step);
+    }
+    syncPlayerUi();
+  });
+}

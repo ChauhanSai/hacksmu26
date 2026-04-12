@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pachyderm Intelligence Terminal</title>
+  <title>Tusk and Tidy</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
@@ -11,26 +11,20 @@
 
 <body>
 
-  <!-- ── Top bar ─────────────────────────────────────────────── -->
   <header class="topbar fixed top-0 inset-x-0 z-50 px-8 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-5">
-      <span class="mono text-xs tracking-[0.22em] uppercase text-[color:var(--accent)]">◆ PACHY·TERM</span>
-      <span class="ticker hidden md:inline">Elephant Behavioral Intelligence v1.0</span>
-    </div>
+    <a href="index.html" class="topbar-wordmark">Tusk and Tidy</a>
 
     <nav class="flex items-center gap-7">
-      <a href="index.html" class="active">Terminal</a>
-      <a href="analysis.html">Analysis</a>
+      <a href="index.html" class="active">Home</a>
       <a href="cleanup.html">Cleanup</a>
-      <span class="live-pill">LIVE</span>
+      <a href="analysis.html">Analysis</a>
+      <a href="contribute.html">Contribute</a>
     </nav>
   </header>
 
-  <!-- ── Hero (scroll-expand media) ──────────────────────────── -->
   <div class="hero-root">
     <section class="hero-section">
 
-      <!-- Background layer (fades out with scroll) -->
       <div id="hero-bg" class="hero-bg">
         <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=1920&auto=format&fit=crop"
              alt="Elephant habitat" />
@@ -38,73 +32,50 @@
 
       <div class="hero-stage">
 
-        <!-- Expanding media frame -->
         <div id="hero-media" class="hero-media" style="width:300px; height:400px;">
           <img src="https://images.unsplash.com/photo-1564760055775-d63b17a55c44?q=80&w=1280&auto=format&fit=crop"
                alt="Elephant portrait" />
         </div>
 
-        <!-- Title split into two halves that slide outward -->
         <div class="hero-title-wrap">
           <div class="flex flex-col md:flex-row gap-2 md:gap-6 items-center justify-center">
-            <h1 id="hero-title-left"  class="hero-title-line">Pachyderm</h1>
-            <h1 id="hero-title-right" class="hero-title-line">Intelligence</h1>
+            <h1 id="hero-title-left" class="hero-title-line"><span class="home-title-inner">Tusk</span></h1>
+            <h1 id="hero-title-right" class="hero-title-line"><span class="home-title-inner home-title-inner--delay">and Tidy</span></h1>
           </div>
           <div id="hero-subline" class="hero-subline">
             <span class="dot"></span>
-            <span>Decoding the silent conversations of the savanna</span>
+            <span>Bioacoustics, cleaned up</span>
             <span class="dot"></span>
           </div>
         </div>
 
       </div>
 
-      <!-- Content revealed after expansion -->
-      <div id="hero-content" class="hero-content">
-        <div class="label mb-3">BRIEFING · 001</div>
-        <h2>A behavioral correlation engine for elephant vocalizations.</h2>
-
-        <p>
-          Pachyderm Intelligence is a computational bioacoustics terminal that
-          ingests low-frequency elephant calls, extracts a twenty-dimensional
-          acoustic signature from each one, and maps those signatures onto
-          observed behavioral context — feeding, greeting, distress, mating,
-          coalition-building — with calibrated confidence scores.
+      <div id="hero-content" class="hero-content hero-content--routes">
+        <div class="label mb-6">Choose a path</div>
+        <p class="text-[color:var(--text-1)] text-sm max-w-xl mb-10 leading-relaxed">
+          Start by cleaning a recording, then explore the analysis terminal on your processed audio when you’re ready.
         </p>
 
-        <p>
-          It is <em>not</em> a translator. It is a signal-intelligence platform
-          for researchers and conservationists: cluster the repertoire, find
-          the context-specific "words," identify individuals by voice, and
-          surface the calls that deviate from baseline.
-        </p>
-
-        <div class="stat-strip">
-          <div>
-            <div class="s-num">20</div>
-            <div class="s-lbl">Acoustic features</div>
-          </div>
-          <div>
-            <div class="s-num">6</div>
-            <div class="s-lbl">Pipeline stages</div>
-          </div>
-          <div>
-            <div class="s-num">GMM</div>
-            <div class="s-lbl">BIC-optimal clustering</div>
-          </div>
-        </div>
-
-        <p>
-          Enter the <b>Analysis</b> terminal to review the live repertoire
-          atlas, symbol × context association matrix, vowel-space geometry,
-          caller voice fingerprints, and per-call intelligence briefings.
-        </p>
-
-        <div class="flex gap-3 mt-10">
-          <a href="analysis.html" class="btn btn-primary">
-            ENTER ANALYSIS TERMINAL →
+        <div class="home-routes">
+          <a href="cleanup.html" class="home-route-card">
+            <span class="home-route-card__kicker mono">01</span>
+            <span class="home-route-card__title">Cleanup</span>
+            <span class="home-route-card__desc">Upload noisy WAVs, run the pipeline, and review before/after spectrograms with labeled rumble windows.</span>
+            <span class="home-route-card__arrow" aria-hidden="true">→</span>
           </a>
-          <a href="GUIDE.md" class="btn">HOW TO READ</a>
+          <a href="analysis.html" class="home-route-card">
+            <span class="home-route-card__kicker mono">02</span>
+            <span class="home-route-card__title">Analysis</span>
+            <span class="home-route-card__desc">Repertoire atlas, clusters, caller context, and behavioral views — after you’ve cleaned your audio.</span>
+            <span class="home-route-card__arrow" aria-hidden="true">→</span>
+          </a>
+          <a href="contribute.html" class="home-route-card">
+            <span class="home-route-card__kicker mono">03</span>
+            <span class="home-route-card__title">Contribute</span>
+            <span class="home-route-card__desc">Share data, labels, or feedback — placeholder for upcoming workflows.</span>
+            <span class="home-route-card__arrow" aria-hidden="true">→</span>
+          </a>
         </div>
       </div>
 

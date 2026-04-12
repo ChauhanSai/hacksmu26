@@ -9,8 +9,12 @@
 const EXPLAIN = (() => {
   let on = false;
   const tooltip = document.getElementById('explain-tooltip');
-  const btn     = document.getElementById('explain-btn');
-  const banner  = document.getElementById('explain-banner');
+  const btn = document.getElementById('explain-btn');
+  const banner = document.getElementById('explain-banner');
+
+  if (!btn) {
+    return { isOn: () => false, hide: () => {} };
+  }
 
   function setEnabled(v) {
     on = v;

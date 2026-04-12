@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Analysis · Pachyderm Intelligence Terminal</title>
+  <title>Analysis · Tusk and Tidy</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -14,33 +14,20 @@
 
   <!-- ── Top bar ───────────────────────────────────────────────── -->
   <header class="topbar sticky top-0 z-50 px-8 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-5">
-      <span class="mono text-xs tracking-[0.22em] uppercase text-[color:var(--accent)]">◆ PACHY·TERM</span>
-      <div class="hidden md:block">
-        <h1 data-explain="Main dashboard title">ELEPHANT BEHAVIORAL INTELLIGENCE · ANALYSIS</h1>
-        <p id="today" class="ticker mt-0.5"></p>
-      </div>
+    <div class="flex items-center gap-5 min-w-0">
+      <a href="index.html" class="topbar-wordmark shrink-0">Tusk and Tidy</a>
+      <p id="today" class="ticker hidden md:block truncate max-w-[min(320px,42vw)] mt-0.5"></p>
     </div>
 
     <div class="flex items-center gap-6">
       <nav class="flex gap-6">
-        <a href="index.html">Terminal</a>
-        <a href="analysis.html" class="active">Analysis</a>
+        <a href="index.html">Home</a>
         <a href="cleanup.html">Cleanup</a>
+        <a href="analysis.html" class="active">Analysis</a>
+        <a href="contribute.html">Contribute</a>
       </nav>
-      <span class="live-pill">LIVE</span>
-      <button id="explain-btn" class="btn" data-explain="Turns on simple hover explanations">
-        EXPLAIN
-      </button>
     </div>
   </header>
-
-  <!-- ── Explain mode banner ───────────────────────────────────── -->
-  <div id="explain-banner"
-       class="hidden px-8 py-2 text-[10.5px] uppercase tracking-[0.14em]"
-       style="background: var(--accent-glow); border-bottom: 1px solid var(--accent-dim); color: var(--accent);">
-    EXPLAIN MODE · Hover any panel or data point for a plain-English description
-  </div>
 
   <!-- ── KPI strip ─────────────────────────────────────────────── -->
   <section class="px-8 pt-8 pb-2">
@@ -126,17 +113,13 @@
 
   </main>
 
-  <!-- Explain tooltip (floating) -->
-  <div id="explain-tooltip" class="explain-tooltip hidden"></div>
-
   <footer class="px-8 py-6 mt-6 border-t" style="border-color: var(--border);">
     <div class="flex items-center justify-between text-[10px] uppercase tracking-[0.14em]" style="color: var(--text-3);">
-      <span>PACHY·TERM · COMPUTATIONAL BIOACOUSTICS PIPELINE</span>
+      <span>Tusk and Tidy</span>
       <span class="mono">v1.0 · BUILD 2026.04</span>
     </div>
   </footer>
 
-  <script src="js/explain.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/app.js"></script>
 </body>

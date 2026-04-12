@@ -13,6 +13,7 @@
 # Backend
 /venv
 venv/
+.venv/
 
 # Python
 __pycache__/
@@ -29,5 +30,9 @@ generated_spectrograms/
 
 # Model outputs
 *.joblib
+
+# Contribute uploads & ledger (demo)
+contribute_uploads/
+data/contribute_submissions.json
 
 # Frontend

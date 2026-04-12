@@ -44,6 +44,8 @@ class CleaningSummary:
     tonal_lines_hz: list[float]
     peak_noise_hz: float
     duration_seconds: float
+    segment_labels: list[str] | None = None
+    annotations_source: str = "auto"
 
 
 def load_audio(path: str | Path) -> tuple[np.ndarray, int]:
@@ -271,12 +273,30 @@ def build_time_mask(times: np.ndarray, segments: list[DetectionSegment]) -> np.n
     return np.clip(mask, 0.0, 1.0)[np.newaxis, :]
 
 
-def clean_audio(audio_path: str | Path, output_path: str | Path) -> CleaningSummary:
+def clean_audio(
+    audio_path: str | Path,
+    output_path: str | Path,
+    *,
+    segments_merged: list[DetectionSegment] | None = None,
+    segments_display: list[tuple[DetectionSegment, str]] | None = None,
+) -> CleaningSummary:
+    """
+    If segments_merged is provided and non-empty, use it for noise estimation and time
+    masking (CSV / hackathon annotations). Otherwise run automatic rumble detection.
+    segments_display: optional per-row (segment, call_type) for API timeline labels.
+    """
     waveform, sr = load_audio(audio_path)
     freqs, times, zxx = compute_spectrogram(waveform, sr)
     magnitude = np.abs(zxx)
 
-    segments = detect_rumble_regions(freqs, times, magnitude)
+    use_annotations = segments_merged is not None and len(segments_merged) > 0
+    if use_annotations:
+        segments = segments_merged
+        annotations_source = "csv"
+    else:
+        segments = detect_rumble_regions(freqs, times, magnitude)
+        annotations_source = "auto"
+
     keep_mask = np.zeros(len(times), dtype=bool)
     for segment in segments:
         keep_mask |= (times >= segment.start) & (times <= segment.end)
@@ -320,8 +340,9 @@ def clean_audio(audio_path: str | Path, output_path: str | Path) -> CleaningSumm
         cleaned_wave = filtfilt(b, a, cleaned_wave)
 
     peak = np.max(np.abs(cleaned_wave))
+    peak_target = 0.82 if use_annotations else 0.7
     if peak > 1e-10:
-        cleaned_wave = 0.7 * cleaned_wave / peak
+        cleaned_wave = peak_target * cleaned_wave / peak
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -333,12 +354,22 @@ def clean_audio(audio_path: str | Path, output_path: str | Path) -> CleaningSumm
         peak_noise_hz = float(freqs[peak_bin])
     else:
         peak_noise_hz = 0.0
+
+    if segments_display:
+        summary_segments = [t[0] for t in segments_display]
+        summary_labels = [t[1] for t in segments_display]
+    else:
+        summary_segments = segments
+        summary_labels = None
+
     return CleaningSummary(
-        segments=segments,
+        segments=summary_segments,
         elephant_band=(int(RUMBLE_LO), int(OUTPUT_HI)),
         tonal_lines_hz=tonal_lines,
         peak_noise_hz=peak_noise_hz,
         duration_seconds=len(waveform) / sr,
+        segment_labels=summary_labels,
+        annotations_source=annotations_source,
     )
 
 
@@ -349,16 +380,28 @@ def plot_spectrogram(audio_path: str | Path, image_path: str | Path, title: str)
     valid = freqs <= DISPLAY_HI
     power_db = 20 * np.log10(np.abs(zxx[valid, :]) + 1e-8)
 
+    # Dark theme to match the web terminal (avoid bright white figure backgrounds)
+    _bg = "#0b0f14"
+    _ax_bg = "#10151c"
+    _fg = "#c9d1d9"
+    _muted = "#6e7681"
+
     fig, ax = plt.subplots(figsize=(10.5, 4.8), dpi=180)
     mesh = ax.pcolormesh(times, freqs[valid], power_db, shading="gouraud", cmap="magma")
-    ax.set_title(title, fontsize=12, pad=12)
-    ax.set_xlabel("Time (s)")
-    ax.set_ylabel("Frequency (Hz)")
+    ax.set_title(title, fontsize=12, pad=12, color=_fg)
+    ax.set_xlabel("Time (s)", color=_muted)
+    ax.set_ylabel("Frequency (Hz)", color=_muted)
     ax.set_ylim(0, DISPLAY_HI)
-    ax.set_facecolor("#110d16")
-    fig.patch.set_facecolor("#fffdf8")
+    ax.set_facecolor(_ax_bg)
+    fig.patch.set_facecolor(_bg)
+    ax.tick_params(colors=_muted, which="both")
+    for spine in ax.spines.values():
+        spine.set_color("#2d333b")
     cbar = fig.colorbar(mesh, ax=ax, pad=0.02)
-    cbar.set_label("Amplitude (dB)")
+    cbar.set_label("Amplitude (dB)", color=_muted)
+    cbar.ax.tick_params(colors=_muted)
+    cbar.ax.yaxis.label.set_color(_muted)
+    cbar.outline.set_edgecolor("#2d333b")
     fig.tight_layout()
     Path(image_path).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(image_path, bbox_inches="tight")
