@@ -1,0 +1,10 @@
+flask
+flask-cors
+librosa
+matplotlib
+numpy
+pandas
+Pillow
+scikit-learn
+scipy
+soundfile

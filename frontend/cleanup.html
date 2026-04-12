@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Audio Cleanup · Pachyderm Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="min-h-screen">
+
+  <!-- ── Top bar ─────────────────────────────────────────────── -->
+  <header class="topbar fixed top-0 inset-x-0 z-50 px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-5">
+      <span class="mono text-xs tracking-[0.22em] uppercase text-[color:var(--accent)]">◆ PACHY·TERM</span>
+      <span class="ticker hidden md:inline">Elephant Behavioral Intelligence v1.0</span>
+    </div>
+
+    <nav class="flex items-center gap-7">
+      <a href="index.html">Terminal</a>
+      <a href="analysis.html">Analysis</a>
+      <a href="cleanup.html" class="active">Cleanup</a>
+      <span class="live-pill">LIVE</span>
+    </nav>
+  </header>
+
+  <!-- ── Main content ────────────────────────────────────────── -->
+  <main class="pt-24 pb-20 px-8 max-w-7xl mx-auto">
+
+    <!-- Page header -->
+    <div class="mb-10">
+      <div class="label mb-2">SIGNAL PROCESSING · AUDIO</div>
+      <h1 class="text-3xl font-medium tracking-tight">Audio Cleanup Terminal</h1>
+      <p class="text-[color:var(--text-1)] mt-3 max-w-2xl text-sm leading-relaxed">
+        Upload a noisy elephant recording and automatically extract clean rumble vocalizations. 
+        The pipeline detects likely rumble windows, suppresses vehicle/generator noise and tonal 
+        interference, and isolates the 8–180 Hz elephant band.
+      </p>
+    </div>
+
+    <!-- Stat chips row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div class="stat-chip">
+        <div class="label">Target Band</div>
+        <div class="value">8–180</div>
+        <div class="sub">Hz</div>
+      </div>
+      <div class="stat-chip">
+        <div class="label">Noise Profile</div>
+        <div class="value">AUTO</div>
+        <div class="sub">Detection</div>
+      </div>
+      <div class="stat-chip">
+        <div class="label">Tonal Lines</div>
+        <div class="value">NOTCH</div>
+        <div class="sub">Suppression</div>
+      </div>
+      <div class="stat-chip">
+        <div class="label">Output Format</div>
+        <div class="value">WAV</div>
+        <div class="sub">16-bit PCM</div>
+      </div>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="grid lg:grid-cols-2 gap-6">
+
+      <!-- ── Left: Upload panel ───────────────────────────────── -->
+      <div class="card">
+        <h2 class="card-title mb-6"><span class="accent">01</span> Upload Recording</h2>
+        
+        <form id="cleanup-form" class="space-y-6">
+          <!-- Dropzone -->
+          <div id="dropzone" class="dropzone relative border-2 border-dashed border-[color:var(--border-hi)] rounded-2xl p-10 text-center cursor-pointer transition-all hover:border-[color:var(--accent-dim)] hover:bg-[color:var(--glass)]">
+            <input type="file" id="audio-input" accept=".wav,audio/wav" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <div class="pointer-events-none">
+              <div class="w-14 h-14 mx-auto mb-4 rounded-xl bg-[color:var(--glass)] border border-[color:var(--border)] flex items-center justify-center">
+                <svg class="w-6 h-6 text-[color:var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <p class="text-sm text-[color:var(--text-0)] font-medium">Drop WAV file or click to browse</p>
+              <p class="text-xs text-[color:var(--text-2)] mt-2">Maximum file size: 200 MB</p>
+            </div>
+          </div>
+
+          <!-- Selected file display -->
+          <div id="selected-file" class="hidden p-4 bg-[color:var(--bg-2)] rounded-xl border border-[color:var(--border)]">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-[color:var(--accent-glow)] border border-[color:var(--accent-dim)] flex items-center justify-center">
+                  <svg class="w-5 h-5 text-[color:var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                  </svg>
+                </div>
+                <div>
+                  <p id="file-name" class="text-sm text-[color:var(--text-0)] font-medium mono"></p>
+                  <p id="file-size" class="text-xs text-[color:var(--text-2)]"></p>
+                </div>
+              </div>
+              <button type="button" id="clear-file" class="text-[color:var(--text-2)] hover:text-[color:var(--risk-crit)] transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit button -->
+          <button type="submit" id="process-btn" class="btn btn-primary w-full justify-center py-3" disabled>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Process Audio</span>
+          </button>
+        </form>
+
+        <!-- Processing indicator -->
+        <div id="processing" class="hidden mt-6">
+          <div class="flex items-center gap-3 text-[color:var(--accent)]">
+            <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-sm mono">Processing audio...</span>
+          </div>
+          <div class="mt-4 h-1 bg-[color:var(--bg-2)] rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-[color:var(--accent)] rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <p id="progress-status" class="text-xs text-[color:var(--text-2)] mt-2 mono">Initializing...</p>
+        </div>
+
+        <!-- Error display -->
+        <div id="error-panel" class="hidden mt-6 p-4 bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.25)] rounded-xl">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-[color:var(--risk-crit)] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p class="text-sm text-[color:var(--risk-crit)] font-medium">Processing Error</p>
+              <p id="error-message" class="text-xs text-[color:var(--text-1)] mt-1"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pipeline info -->
+        <div class="mt-8 p-5 bg-[color:var(--bg-2)] rounded-xl border border-[color:var(--border)]">
+          <h3 class="label mb-4">Pipeline Stages</h3>
+          <ol class="space-y-3 text-xs text-[color:var(--text-1)]">
+            <li class="flex items-start gap-3">
+              <span class="w-5 h-5 rounded-full bg-[color:var(--glass)] border border-[color:var(--border)] flex items-center justify-center text-[color:var(--accent)] mono text-[10px]">1</span>
+              <span>Generate spectrogram from input audio</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="w-5 h-5 rounded-full bg-[color:var(--glass)] border border-[color:var(--border)] flex items-center justify-center text-[color:var(--accent)] mono text-[10px]">2</span>
+              <span>Detect likely rumble windows (8–180 Hz)</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="w-5 h-5 rounded-full bg-[color:var(--glass)] border border-[color:var(--border)] flex items-center justify-center text-[color:var(--accent)] mono text-[10px]">3</span>
+              <span>Estimate noise profile from non-rumble regions</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="w-5 h-5 rounded-full bg-[color:var(--glass)] border border-[color:var(--border)] flex items-center justify-center text-[color:var(--accent)] mono text-[10px]">4</span>
+              <span>Spectral subtraction + tonal notch filtering</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="w-5 h-5 rounded-full bg-[color:var(--glass)] border border-[color:var(--border)] flex items-center justify-center text-[color:var(--accent)] mono text-[10px]">5</span>
+              <span>Export cleaned audio + comparison spectrograms</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- ── Right: Results panel ─────────────────────────────── -->
+      <div class="card">
+        <h2 class="card-title mb-6"><span class="accent">02</span> Cleanup Results</h2>
+
+        <!-- Empty state -->
+        <div id="results-empty" class="py-16 text-center">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[color:var(--glass)] border border-[color:var(--border)] flex items-center justify-center">
+            <svg class="w-7 h-7 text-[color:var(--text-2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+          </div>
+          <p class="text-sm text-[color:var(--text-0)] font-medium">No results yet</p>
+          <p class="text-xs text-[color:var(--text-2)] mt-2 max-w-xs mx-auto">
+            Upload a WAV file to see before/after spectrograms and download the cleaned audio
+          </p>
+        </div>
+
+        <!-- Results content (hidden initially) -->
+        <div id="results-content" class="hidden space-y-6">
+          
+          <!-- Summary card -->
+          <div id="summary-card" class="p-4 bg-[color:var(--bg-2)] rounded-xl border border-[color:var(--border)]">
+            <div class="flex items-center gap-2 mb-3">
+              <svg class="w-4 h-4 text-[color:var(--risk-low)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="text-xs text-[color:var(--risk-low)] font-medium mono uppercase tracking-wide">Processing Complete</span>
+            </div>
+            <p id="summary-text" class="text-sm text-[color:var(--text-1)] leading-relaxed"></p>
+          </div>
+
+          <!-- Spectrogram comparison -->
+          <div class="space-y-4">
+            <h3 class="label">Spectrogram Comparison</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="spectrogram-card">
+                <div class="label mb-2 text-center">Before</div>
+                <div class="aspect-[16/9] bg-[color:var(--bg-2)] rounded-xl overflow-hidden border border-[color:var(--border)]">
+                  <img id="before-spectrogram" src="" alt="Before spectrogram" class="w-full h-full object-cover" />
+                </div>
+              </div>
+              <div class="spectrogram-card">
+                <div class="label mb-2 text-center">After</div>
+                <div class="aspect-[16/9] bg-[color:var(--bg-2)] rounded-xl overflow-hidden border border-[color:var(--border)]">
+                  <img id="after-spectrogram" src="" alt="After spectrogram" class="w-full h-full object-cover" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detected rumble segments -->
+          <div id="segments-section" class="space-y-4">
+            <h3 class="label">Detected Rumble Windows</h3>
+            <div class="relative h-8 bg-[color:var(--bg-2)] rounded-lg overflow-hidden border border-[color:var(--border)]">
+              <div id="timeline-container" class="absolute inset-0"></div>
+            </div>
+            <div id="segments-list" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- Audio player -->
+          <div class="space-y-4">
+            <h3 class="label">Cleaned Audio</h3>
+            <div class="p-4 bg-[color:var(--bg-2)] rounded-xl border border-[color:var(--border)]">
+              <audio id="cleaned-audio" controls class="w-full" style="filter: invert(0.9) hue-rotate(180deg);"></audio>
+              <p id="playback-status" class="text-xs text-[color:var(--text-2)] mt-3 mono text-center">Duration: --</p>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex flex-wrap gap-3">
+            <a id="download-audio" href="#" download class="btn btn-primary flex-1 justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Download WAV</span>
+            </a>
+            <a id="download-spectrogram" href="#" target="_blank" class="btn flex-1 justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>View Spectrogram</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/cleanup.js"></script>
+</body>
+</html>

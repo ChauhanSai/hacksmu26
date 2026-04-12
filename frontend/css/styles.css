@@ -562,3 +562,65 @@ body.hero-locked {
   overflow: hidden;
   height: 100dvh;
 }
+
+/* ════════════════════════════════════════════════════════════════
+ *  CLEANUP PAGE — audio processing terminal
+ * ════════════════════════════════════════════════════════════════ */
+
+.dropzone {
+  transition: all 0.2s ease;
+}
+
+.dropzone.dragover,
+.dropzone:hover {
+  border-color: var(--accent-dim);
+  background: var(--glass);
+}
+
+.spectrogram-card img {
+  transition: transform 0.3s ease;
+}
+
+.spectrogram-card:hover img {
+  transform: scale(1.02);
+}
+
+/* Audio player dark theme override */
+audio {
+  width: 100%;
+  border-radius: 8px;
+}
+
+audio::-webkit-media-controls-panel {
+  background: var(--bg-2);
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* Processing spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Segment timeline */
+#timeline-container {
+  position: relative;
+}
+
+.segment-bar {
+  transition: opacity 0.2s ease;
+}
+
+.segment-bar.active {
+  opacity: 1 !important;
+  box-shadow: 0 0 8px var(--accent);
+}

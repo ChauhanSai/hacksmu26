@@ -12,8 +12,21 @@
 
 # Backend
 /venv
+venv/
+
+# Python
+__pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
+
+# Audio cleanup outputs (generated files)
+uploads/
+cleaned_output_web/
+cleaned_output_web_v2/
+generated_spectrograms/
+
+# Model outputs
+*.joblib
 
 # Frontend
-
-
-*/__pycache__/
