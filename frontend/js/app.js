@@ -140,7 +140,7 @@ function wireDownloads() {
 
   const [
     summary, clusters, pmi, transition, vowel, context,
-    voiceProfiles, affinity, interpretations,
+    voiceProfiles, affinity, interpretations, modelInsights,
   ] = await Promise.all([
     loadJson('summary.json'),
     loadJson('clusters.json'),
@@ -151,12 +151,22 @@ function wireDownloads() {
     loadJson('voice_profiles.json'),
     loadJson('caller_affinity.json'),
     loadJson('sample_interpretations.json'),
+    loadJson('model_insights.json'),
   ]);
 
   buildSummary(summary);
 
   if (clusters)        buildClusterChart('cluster-chart', clusters);
   else                 showNoData('cluster-chart');
+
+  // Model Insights charts
+  if (modelInsights) {
+    buildFeatureImportanceChart('feature-importance-chart', modelInsights);
+    buildClassMetricsChart('class-metrics-chart', modelInsights);
+  } else {
+    showNoData('feature-importance-chart');
+    showNoData('class-metrics-chart');
+  }
 
   if (pmi)             buildPmiChart('pmi-chart', pmi);
   else                 showNoData('pmi-chart');

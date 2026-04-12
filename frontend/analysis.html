@@ -56,34 +56,123 @@
       </p>
     </section>
 
-    <!-- Row 2: PMI heatmap -->
+    <!-- Row 2: Model Overview - Acoustic Fingerprint -->
+    <section class="card lg:col-span-2" data-explain="LightGBM classifier acoustic fingerprint breakdown">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="card-title"><span class="accent">02</span>ACOUSTIC FINGERPRINT · 256-DIM CLASSIFIER</h2>
+        <div class="flex items-center gap-3">
+          <span class="model-accuracy-badge">91.6% Accuracy</span>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Fingerprint blocks -->
+        <div class="fingerprint-block">
+          <div class="fingerprint-header">
+            <span class="fingerprint-icon">📊</span>
+            <span class="fingerprint-count">48 features</span>
+          </div>
+          <h3 class="fingerprint-title">Rumble Energy</h3>
+          <p class="fingerprint-range">8–300 Hz</p>
+          <p class="fingerprint-desc">Detailed sub-bands capturing infrasonic structure unique to elephant vocalizations</p>
+        </div>
+        
+        <div class="fingerprint-block">
+          <div class="fingerprint-header">
+            <span class="fingerprint-icon">〰️</span>
+            <span class="fingerprint-count">16 features</span>
+          </div>
+          <h3 class="fingerprint-title">Call Tremor</h3>
+          <p class="fingerprint-range">~7.7 Hz modulation</p>
+          <p class="fingerprint-desc">Biological vibration pattern from the elephant's larynx during vocalization</p>
+        </div>
+        
+        <div class="fingerprint-block">
+          <div class="fingerprint-header">
+            <span class="fingerprint-icon">📈</span>
+            <span class="fingerprint-count">64 features</span>
+          </div>
+          <h3 class="fingerprint-title">Temporal Phases</h3>
+          <p class="fingerprint-range">32 frames + delta</p>
+          <p class="fingerprint-desc">Onset, body, and offset patterns showing how calls fade in and out</p>
+        </div>
+        
+        <div class="fingerprint-block">
+          <div class="fingerprint-header">
+            <span class="fingerprint-icon">🎵</span>
+            <span class="fingerprint-count">128 features</span>
+          </div>
+          <h3 class="fingerprint-title">Vocal Timbre</h3>
+          <p class="fingerprint-range">MFCCs + Mel stats</p>
+          <p class="fingerprint-desc">Voice texture differentiating call types like Social vs Alarm rumbles</p>
+        </div>
+      </div>
+      
+      <div class="model-tech-strip">
+        <span class="model-tech-tag">LightGBM</span>
+        <span class="model-tech-tag">1,352 samples</span>
+        <span class="model-tech-tag">256 dimensions</span>
+        <span class="model-tech-tag">SHAP Explainability</span>
+      </div>
+    </section>
+
+    <!-- Row 3: Feature Importance & Key Insights -->
+    <section class="card" data-explain="Top features ranked by importance">
+      <h2 class="card-title mb-4"><span class="accent">03</span>FEATURE IMPORTANCE · TOP PREDICTORS</h2>
+      <div id="feature-importance-chart" class="w-full h-[340px]"></div>
+      <div class="key-insights-strip mt-4">
+        <div class="insight-item">
+          <span class="insight-bullet">●</span>
+          <span><strong>Decay Rate</strong> is the #1 predictor — how calls end matters most</span>
+        </div>
+        <div class="insight-item">
+          <span class="insight-bullet">●</span>
+          <span><strong>7.7 Hz Tremor</strong> reveals emotional intensity via laryngeal vibration</span>
+        </div>
+        <div class="insight-item">
+          <span class="insight-bullet">●</span>
+          <span><strong>Infrasonic ratio</strong> distinguishes contact calls from distress signals</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Row 3: Per-class Performance -->
+    <section class="card" data-explain="Classification accuracy per context type">
+      <h2 class="card-title mb-4"><span class="accent">04</span>CONTEXT CLASSIFICATION · PERFORMANCE</h2>
+      <div id="class-metrics-chart" class="w-full h-[340px]"></div>
+      <p class="text-[10.5px] mt-3 uppercase tracking-[0.12em]" style="color: var(--text-2);">
+        F1 Score per behavioral context · Higher = better precision + recall balance
+      </p>
+    </section>
+
+    <!-- Row 4: PMI heatmap -->
     <section class="card" data-explain="Which call types match which behaviors">
-      <h2 class="card-title mb-4"><span class="accent">02</span>SYMBOL × CONTEXT · PMI MATRIX</h2>
+      <h2 class="card-title mb-4"><span class="accent">05</span>SYMBOL × CONTEXT · PMI MATRIX</h2>
       <div id="pmi-chart" class="w-full h-[420px]"></div>
     </section>
 
-    <!-- Row 2: Transition matrix -->
+    <!-- Row 5: Transition matrix -->
     <section class="card" data-explain="Which call usually follows another">
-      <h2 class="card-title mb-4"><span class="accent">03</span>SEQUENTIAL TRANSITIONS</h2>
+      <h2 class="card-title mb-4"><span class="accent">06</span>SEQUENTIAL TRANSITIONS</h2>
       <div id="transition-chart" class="w-full h-[420px]"></div>
     </section>
 
-    <!-- Row 3: Vowel space F1/F2 -->
+    <!-- Row 6: Vowel space F1/F2 -->
     <section class="card" data-explain="Mouth-shape categories like vowels">
-      <h2 class="card-title mb-4"><span class="accent">04</span>VOWEL SPACE · F1 / F2 ARTICULATION</h2>
+      <h2 class="card-title mb-4"><span class="accent">07</span>VOWEL SPACE · F1 / F2 ARTICULATION</h2>
       <div id="vowel-chart" class="w-full h-[400px]"></div>
     </section>
 
-    <!-- Row 3: Context distribution -->
+    <!-- Row 6: Context distribution -->
     <section class="card" data-explain="How many calls per behavior type">
-      <h2 class="card-title mb-4"><span class="accent">05</span>BEHAVIORAL CONTEXT · DISTRIBUTION</h2>
+      <h2 class="card-title mb-4"><span class="accent">08</span>BEHAVIORAL CONTEXT · DISTRIBUTION</h2>
       <div id="context-chart" class="w-full h-[400px]"></div>
     </section>
 
-    <!-- Row 4: Voice fingerprints table -->
+    <!-- Row 7: Voice fingerprints table -->
     <section class="card" data-explain="Each elephant's average sound profile">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="card-title"><span class="accent">06</span>VOICE FINGERPRINTS</h2>
+        <h2 class="card-title"><span class="accent">09</span>VOICE FINGERPRINTS</h2>
         <button class="download-btn" data-csv="voice_profiles.csv"
                 data-explain="Download all voice profile averages">
           ↓ voice_profiles.csv
@@ -92,10 +181,10 @@
       <div id="voice-table" class="overflow-auto max-h-[420px]"></div>
     </section>
 
-    <!-- Row 4: Caller-context affinity -->
+    <!-- Row 7: Caller-context affinity -->
     <section class="card" data-explain="Which context each elephant prefers">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="card-title"><span class="accent">07</span>CALLER → CONTEXT · AFFINITY</h2>
+        <h2 class="card-title"><span class="accent">10</span>CALLER → CONTEXT · AFFINITY</h2>
         <button class="download-btn" data-csv="caller_context_affinity.csv"
                 data-explain="Download specialist caller data">
           ↓ caller_context_affinity.csv
@@ -104,10 +193,10 @@
       <div id="affinity-table" class="overflow-auto max-h-[420px]"></div>
     </section>
 
-    <!-- Row 5: Sample interpretations (WHO/WHAT/WHY cards) -->
+    <!-- Row 8: Sample interpretations (WHO/WHAT/WHY cards) -->
     <section class="card lg:col-span-2"
              data-explain="Sample calls with full predictions">
-      <h2 class="card-title mb-4"><span class="accent">08</span>INTELLIGENCE BRIEFINGS · SAMPLE CALLS</h2>
+      <h2 class="card-title mb-4"><span class="accent">11</span>INTELLIGENCE BRIEFINGS · SAMPLE CALLS</h2>
       <div id="interpretations" class="grid gap-4 md:grid-cols-2"></div>
     </section>
 

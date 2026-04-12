@@ -143,34 +143,31 @@ function buildClusterChart(target, data) {
     ...BASE_LAYOUT,
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: 'rgba(13,17,23,0.6)',
-    autosize: true,
     xaxis: {
-      title: { text: 'UMAP 1', font: { color: 'rgba(243,245,247,0.45)', size: 11, family: 'Geist, sans-serif' }, standoff: 8 },
+      title: { text: 'UMAP 1', font: { color: 'rgba(243,245,247,0.45)', size: 12, family: 'Geist, sans-serif' }, standoff: 12 },
       showgrid: true, gridcolor: 'rgba(255,255,255,0.03)', gridwidth: 1,
       zeroline: false, showline: false, ticks: '',
       tickfont: { color: 'rgba(255,255,255,0.18)', size: 9, family: 'Geist Mono, monospace' },
     },
     yaxis: {
-      title: { text: 'UMAP 2', font: { color: 'rgba(243,245,247,0.45)', size: 11, family: 'Geist, sans-serif' }, standoff: 8 },
+      title: { text: 'UMAP 2', font: { color: 'rgba(243,245,247,0.45)', size: 12, family: 'Geist, sans-serif' }, standoff: 12 },
       showgrid: true, gridcolor: 'rgba(255,255,255,0.03)', gridwidth: 1,
       zeroline: false, showline: false, ticks: '',
       tickfont: { color: 'rgba(255,255,255,0.18)', size: 9, family: 'Geist Mono, monospace' },
-      scaleanchor: 'x',
-      scaleratio: 1,
     },
     legend: {
       orientation: 'v',
       x: 0.99, y: 0.98,
       xanchor: 'right', yanchor: 'top',
-      font: { size: 9, color: 'rgba(243,245,247,0.6)', family: 'Geist Mono, monospace' },
+      font: { size: 10, color: 'rgba(243,245,247,0.6)', family: 'Geist Mono, monospace' },
       bgcolor: 'rgba(13,17,23,0.88)',
       bordercolor: 'rgba(255,255,255,0.06)',
       borderwidth: 1,
       itemsizing: 'constant',
-      tracegroupgap: 1,
+      tracegroupgap: 2,
     },
     annotations,
-    margin: { l: 48, r: 16, t: 12, b: 44 },
+    margin: { l: 56, r: 24, t: 16, b: 56 },
     hoverlabel: {
       bgcolor: 'rgba(13,17,23,0.94)',
       bordercolor: 'rgba(255,255,255,0.1)',
@@ -396,6 +393,156 @@ function buildIdentifiabilityChart(target, data) {
       hovertemplate: on
         ? 'How unique this elephant sounds<extra></extra>'
         : '<b>%{y}</b><br>Identifiability: %{x:.2f}<extra></extra>',
+    });
+  });
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 7. FEATURE IMPORTANCE (MODEL INSIGHTS)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function buildFeatureImportanceChart(target, data) {
+  const features = data.top_features;
+  const categoryColors = {
+    'Temporal': '#fb923c',
+    'Tremor': '#f87171',
+    'Rumble': '#7dd3fc',
+    'Timbre': '#a78bfa',
+    'Harmonic': '#4ade80',
+  };
+
+  const colors = features.map(f => categoryColors[f.category] || '#7dd3fc');
+  
+  const trace = {
+    type: 'bar',
+    orientation: 'h',
+    x: features.map(f => f.importance * 100),
+    y: features.map(f => f.name),
+    marker: {
+      color: colors,
+      line: { color: 'rgba(255,255,255,0.12)', width: 0.5 },
+    },
+    text: features.map(f => `${(f.importance * 100).toFixed(1)}%`),
+    textposition: 'outside',
+    textfont: { color: 'rgba(243,245,247,0.7)', size: 10, family: 'Geist Mono, monospace' },
+    hovertemplate: '<b>%{y}</b><br>Importance: %{x:.1f}%<extra></extra>',
+  };
+
+  const layout = {
+    ...BASE_LAYOUT,
+    xaxis: {
+      title: { text: 'Relative Importance (%)', font: { color: AXIS, size: 11 } },
+      gridcolor: 'rgba(255,255,255,0.04)',
+      tickfont: { color: AXIS, size: 9 },
+      range: [0, Math.max(...features.map(f => f.importance * 100)) * 1.25],
+    },
+    yaxis: {
+      automargin: true,
+      autorange: 'reversed',
+      tickfont: { color: 'rgba(243,245,247,0.8)', size: 10 },
+      gridcolor: 'rgba(0,0,0,0)',
+    },
+    margin: { l: 160, r: 60, t: 10, b: 50 },
+    annotations: [
+      { x: 0.98, y: -0.18, xref: 'paper', yref: 'paper', text: '<b>◆</b> Temporal  <b>◆</b> Tremor  <b>◆</b> Rumble  <b>◆</b> Timbre', showarrow: false, font: { size: 9, color: 'rgba(243,245,247,0.5)' }, xanchor: 'right' }
+    ],
+  };
+
+  Plotly.newPlot(target, [trace], layout, CONFIG);
+
+  registerChart(target, (on) => {
+    Plotly.restyle(target, {
+      hovertemplate: on
+        ? 'How much this acoustic property matters for prediction<extra></extra>'
+        : '<b>%{y}</b><br>Importance: %{x:.1f}%<extra></extra>',
+    });
+  });
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 8. CLASS METRICS (MODEL PERFORMANCE BY CONTEXT)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function buildClassMetricsChart(target, data) {
+  const metrics = data.class_metrics;
+  const shortLabels = metrics.map(m => {
+    const words = m.context.split(' ');
+    return words.length > 2 ? words.slice(0, 2).join(' ') : m.context;
+  });
+
+  const trace = {
+    type: 'bar',
+    x: shortLabels,
+    y: metrics.map(m => m.f1 * 100),
+    marker: {
+      color: metrics.map(m => {
+        if (m.f1 >= 0.93) return '#4ade80';
+        if (m.f1 >= 0.90) return '#7dd3fc';
+        if (m.f1 >= 0.87) return '#fbbf24';
+        return '#fb923c';
+      }),
+      line: { color: 'rgba(255,255,255,0.12)', width: 0.5 },
+    },
+    text: metrics.map(m => `${(m.f1 * 100).toFixed(0)}%`),
+    textposition: 'outside',
+    textfont: { color: 'rgba(243,245,247,0.7)', size: 10, family: 'Geist Mono, monospace' },
+    customdata: metrics,
+    hovertemplate: '<b>%{customdata.context}</b><br>' +
+      'F1 Score: %{customdata.f1:.0%}<br>' +
+      'Precision: %{customdata.precision:.0%}<br>' +
+      'Recall: %{customdata.recall:.0%}<br>' +
+      'Samples: %{customdata.support}<extra></extra>',
+  };
+
+  const layout = {
+    ...BASE_LAYOUT,
+    xaxis: {
+      tickangle: -35,
+      automargin: true,
+      tickfont: { color: AXIS, size: 9 },
+      gridcolor: 'rgba(0,0,0,0)',
+    },
+    yaxis: {
+      title: { text: 'F1 Score (%)', font: { color: AXIS, size: 11 } },
+      gridcolor: 'rgba(255,255,255,0.04)',
+      tickfont: { color: AXIS, size: 9 },
+      range: [0, 100],
+    },
+    margin: { l: 50, r: 20, t: 10, b: 90 },
+    shapes: [
+      {
+        type: 'line',
+        x0: -0.5, x1: metrics.length - 0.5,
+        y0: 91.6, y1: 91.6,
+        line: { color: 'rgba(125, 211, 252, 0.5)', width: 1.5, dash: 'dot' },
+      }
+    ],
+    annotations: [
+      {
+        x: metrics.length - 0.6,
+        y: 91.6,
+        text: '91.6% avg',
+        showarrow: false,
+        font: { size: 9, color: '#7dd3fc', family: 'Geist Mono, monospace' },
+        xanchor: 'right',
+        yanchor: 'bottom',
+      }
+    ],
+  };
+
+  Plotly.newPlot(target, [trace], layout, CONFIG);
+
+  registerChart(target, (on) => {
+    Plotly.restyle(target, {
+      hovertemplate: on
+        ? 'How accurately the model classifies this context<extra></extra>'
+        : '<b>%{customdata.context}</b><br>' +
+          'F1 Score: %{customdata.f1:.0%}<br>' +
+          'Precision: %{customdata.precision:.0%}<br>' +
+          'Recall: %{customdata.recall:.0%}<br>' +
+          'Samples: %{customdata.support}<extra></extra>',
     });
   });
 }

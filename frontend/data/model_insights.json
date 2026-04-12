@@ -1,0 +1,86 @@
+{
+  "model_info": {
+    "name": "LightGBM Classifier",
+    "accuracy": 0.9157,
+    "samples": 1352,
+    "features": 256,
+    "description": "Gradient Boosting classifier trained on elephant-specific acoustic fingerprints"
+  },
+  "fingerprint_blocks": [
+    {
+      "name": "Rumble Energy",
+      "features": 48,
+      "range": "8–300 Hz",
+      "description": "Detailed sub-bands capturing infrasonic structure unique to elephant vocalizations",
+      "icon": "📊"
+    },
+    {
+      "name": "Call Tremor",
+      "features": 16,
+      "range": "~7.7 Hz modulation",
+      "description": "Biological vibration pattern from the elephant's larynx during vocalization",
+      "icon": "〰️"
+    },
+    {
+      "name": "Temporal Phases",
+      "features": 64,
+      "range": "32 frames + delta",
+      "description": "Onset, body, and offset patterns showing how calls fade in and out",
+      "icon": "📈"
+    },
+    {
+      "name": "Vocal Timbre",
+      "features": 128,
+      "range": "MFCCs + Mel stats",
+      "description": "Voice texture differentiating call types like Social vs Alarm rumbles",
+      "icon": "🎵"
+    }
+  ],
+  "class_metrics": [
+    { "context": "Advertisement & Attraction", "precision": 0.90, "recall": 0.95, "f1": 0.93, "support": 248 },
+    { "context": "Affiliative", "precision": 0.94, "recall": 0.88, "f1": 0.91, "support": 204 },
+    { "context": "Attacking & Mobbing", "precision": 0.82, "recall": 0.91, "f1": 0.86, "support": 44 },
+    { "context": "Calf Nourishment & Weaning", "precision": 0.93, "recall": 0.90, "f1": 0.91, "support": 144 },
+    { "context": "Calf Reassurance & Protection", "precision": 0.93, "recall": 0.92, "f1": 0.92, "support": 84 },
+    { "context": "Movement Space & Leadership", "precision": 0.92, "recall": 0.87, "f1": 0.90, "support": 204 },
+    { "context": "Protest & Distress", "precision": 0.95, "recall": 0.93, "f1": 0.94, "support": 176 },
+    { "context": "Social Play", "precision": 0.89, "recall": 0.95, "f1": 0.92, "support": 248 }
+  ],
+  "top_features": [
+    { "name": "Decay Rate (frames 28-32)", "importance": 0.142, "category": "Temporal" },
+    { "name": "Tremor Modulation 7.7 Hz", "importance": 0.118, "category": "Tremor" },
+    { "name": "Rumble Band 18-25 Hz", "importance": 0.095, "category": "Rumble" },
+    { "name": "Attack Slope (frames 1-4)", "importance": 0.089, "category": "Temporal" },
+    { "name": "MFCC 2 (brightness)", "importance": 0.076, "category": "Timbre" },
+    { "name": "Infrasonic Ratio (8-120 Hz)", "importance": 0.068, "category": "Rumble" },
+    { "name": "Harmonic Regularity 14 Hz", "importance": 0.054, "category": "Harmonic" },
+    { "name": "Spectral Contrast Low", "importance": 0.048, "category": "Timbre" }
+  ],
+  "key_insights": [
+    {
+      "title": "How calls END matters more than how they START",
+      "description": "The rate of decay (how quickly the call fades) is the #1 predictor of context. Alarm calls end abruptly while social calls taper gently."
+    },
+    {
+      "title": "The 7.7 Hz 'tremor' is a biological signature",
+      "description": "Elephants produce a characteristic vocal tremor caused by laryngeal oscillation. Its intensity varies by emotional state."
+    },
+    {
+      "title": "Infrasonic ratios reveal intent",
+      "description": "The balance between deep infrasound (8-120 Hz) and higher harmonics distinguishes contact calls from distress signals."
+    }
+  ],
+  "confusion_matrix": {
+    "labels": ["Advert.", "Affil.", "Attack", "Calf N.", "Calf R.", "Movement", "Protest", "Social"],
+    "values": [
+      [235, 2, 2, 2, 2, 2, 0, 3],
+      [7, 180, 4, 2, 0, 4, 2, 5],
+      [0, 0, 40, 0, 0, 0, 0, 4],
+      [2, 3, 0, 129, 1, 2, 1, 6],
+      [0, 0, 0, 2, 77, 0, 3, 2],
+      [9, 3, 2, 2, 0, 178, 2, 8],
+      [5, 2, 0, 1, 1, 2, 164, 1],
+      [2, 1, 1, 1, 2, 5, 1, 235]
+    ]
+  }
+}
