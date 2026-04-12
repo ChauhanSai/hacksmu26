@@ -328,6 +328,23 @@
     </div>
   </div>
 
+  <!-- Full-screen acceptance feedback (after approve / mock approve) -->
+  <div id="accept-celebration-root" class="accept-celebration-overlay hidden" aria-hidden="true" role="dialog" aria-labelledby="accept-celebration-title">
+    <div class="accept-celebration-card">
+      <div class="accept-celebration-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+      </div>
+      <h2 id="accept-celebration-title" class="accept-celebration-title">Accepted</h2>
+      <p id="accept-celebration-sub" class="accept-celebration-sub"></p>
+      <div class="accept-celebration-actions">
+        <a id="accept-celebration-explorer" href="#" target="_blank" rel="noopener" class="hidden">View on Solana Explorer</a>
+        <button type="button" id="accept-celebration-dismiss" class="accept-celebration-dismiss">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/contribute.js"></script>
 </body>
 </html>

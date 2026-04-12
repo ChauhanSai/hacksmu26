@@ -143,9 +143,32 @@ function explorerAddressUrl(pubkey, cluster) {
   return `https://explorer.solana.com/address/${pubkey}${c}`;
 }
 
+/** Normalize wallet `signAndSendTransaction` / similar return values to a base58 signature string. */
+async function normalizeWalletSignature(result) {
+  if (result == null) {
+    throw new Error("Wallet returned no signature.");
+  }
+  if (typeof result === "string") {
+    return result;
+  }
+  const raw = result.signature ?? result.txid ?? result;
+  if (typeof raw === "string") {
+    return raw;
+  }
+  if (raw instanceof Uint8Array) {
+    const { encode } = await import("https://esm.sh/bs58@5.0.0");
+    return encode(raw);
+  }
+  if (Array.isArray(raw)) {
+    const { encode } = await import("https://esm.sh/bs58@5.0.0");
+    return encode(Uint8Array.from(raw));
+  }
+  throw new Error("Could not read transaction signature from wallet. Approve in Phantom and try again.");
+}
+
 /**
  * Send SOL from the biologist's Phantom wallet to the contributor (submitter).
- * User must approve the transaction in Phantom; both accounts should be on devnet.
+ * User must approve the transaction in Phantom; use Solana **devnet** in Phantom settings.
  */
 async function sendRewardFromBiologistWallet({ fromPubkey, toWallet, lamports }) {
   const { Connection, Transaction, SystemProgram, PublicKey } = await import(
@@ -166,31 +189,53 @@ async function sendRewardFromBiologistWallet({ fromPubkey, toWallet, lamports })
       lamports: lam,
     })
   );
-  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("finalized");
   tx.recentBlockhash = blockhash;
   tx.feePayer = from;
   const provider = getProvider();
+  if (!provider) {
+    throw new Error("Install Phantom and connect your biologist wallet.");
+  }
+
+  const sendOpts = { skipPreflight: false, maxRetries: 5, preflightCommitment: "confirmed" };
+
   let sig;
-  if (provider?.signAndSendTransaction) {
-    const result = await provider.signAndSendTransaction(tx);
-    sig = result?.signature;
-    if (sig instanceof Uint8Array) {
-      const { encode } = await import("https://esm.sh/bs58@5.0.0");
-      sig = encode(sig);
+
+  if (typeof provider.signAndSendTransaction === "function") {
+    let result;
+    try {
+      result = await provider.signAndSendTransaction(tx, sendOpts);
+    } catch (e1) {
+      try {
+        result = await provider.signAndSendTransaction(tx);
+      } catch (e2) {
+        const msg = e2?.message || e1?.message || "signAndSendTransaction failed";
+        throw new Error(
+          `${msg} — ensure Phantom is on **Devnet** (Settings → Developer Settings) and try again.`
+        );
+      }
     }
-    if (typeof sig !== "string") {
-      sig = String(sig);
-    }
+    sig = await normalizeWalletSignature(result);
+  } else if (typeof provider.signTransaction === "function") {
+    const signed = await provider.signTransaction(tx);
+    sig = await connection.sendRawTransaction(signed.serialize(), sendOpts);
+  } else {
+    throw new Error("This wallet cannot sign Solana transactions. Use Phantom.");
+  }
+
+  try {
     await connection.confirmTransaction(
       { signature: sig, blockhash, lastValidBlockHeight },
       "confirmed"
     );
-  } else if (provider?.signTransaction) {
-    const signed = await provider.signTransaction(tx);
-    sig = await connection.sendRawTransaction(signed.serialize());
-    await connection.confirmTransaction(sig, "confirmed");
-  } else {
-    throw new Error("Phantom cannot sign transactions. Update Phantom.");
+  } catch {
+    const status = await connection.getSignatureStatus(sig);
+    if (status?.value?.confirmationStatus) {
+      return sig;
+    }
+    throw new Error(
+      "Transaction submitted but confirmation timed out. Check Solana Explorer for this signature, or retry if it did not land."
+    );
   }
   return sig;
 }
@@ -316,6 +361,12 @@ const modalActions = document.getElementById("modal-actions");
 const modalBtnAccept = document.getElementById("modal-btn-accept");
 const modalBtnReject = document.getElementById("modal-btn-reject");
 
+const acceptCelebrationRoot = document.getElementById("accept-celebration-root");
+const acceptCelebrationTitle = document.getElementById("accept-celebration-title");
+const acceptCelebrationSub = document.getElementById("accept-celebration-sub");
+const acceptCelebrationExplorer = document.getElementById("accept-celebration-explorer");
+const acceptCelebrationDismiss = document.getElementById("accept-celebration-dismiss");
+
 const metaEthogramContext = document.getElementById("meta-ethogram-context");
 const metaEthogramName = document.getElementById("meta-ethogram-name");
 const metaGender = document.getElementById("meta-gender");
@@ -329,7 +380,10 @@ const metaSounds = document.getElementById("meta-sounds");
 /** @type {null | { contextToNames: Record<string, string[]>, contexts: string[], ages: string[], genders: string[], modes: string[], allNames: string[] }} */
 let ethogramOptions = null;
 
-let config = { rewardSol: 0, network: "devnet", treasuryConfigured: false };
+/** Default 1.5 SOL reward if config API fails (matches server `REWARD_LAMPORTS` default). */
+const DEFAULT_REWARD_LAMPORTS = 1_500_000_000;
+
+let config = { rewardSol: 0, network: "devnet", treasuryConfigured: false, rpcUrl: "" };
 let biologistLoggedIn = false;
 /** @type {"contributor"|"biologist"} */
 let activeTab = "contributor";
@@ -598,6 +652,15 @@ async function loadConfig() {
     config = await fetchJson("/api/contribute/config");
     if (config.rewardLamports == null && config.rewardSol != null) {
       config.rewardLamports = Math.round(Number(config.rewardSol) * 1e9);
+    }
+    if (config.rewardLamports == null) {
+      config.rewardLamports = DEFAULT_REWARD_LAMPORTS;
+    }
+    if (config.rewardSol == null || !Number.isFinite(Number(config.rewardSol))) {
+      config.rewardSol = config.rewardLamports / 1e9;
+    }
+    if (!config.rpcUrl) {
+      config.rpcUrl = "https://api.devnet.solana.com";
     }
     const sol = config.rewardSol != null ? Number(config.rewardSol).toFixed(2) : "?";
     const mode = "Reviewer approves payout in Phantom — transfer goes to the contributor wallet on devnet.";
@@ -936,7 +999,7 @@ bioLogoutBtn.addEventListener("click", async () => {
 
 function mergeSubmissions(realList) {
   const realIds = new Set(realList.map((r) => r.id));
-  const lam = config.rewardLamports ?? 1_500_000_000;
+  const lam = config.rewardLamports ?? DEFAULT_REWARD_LAMPORTS;
   const mocks = MOCK_SUBMISSIONS.filter((m) => !realIds.has(m.id)).map((m) => {
     const st = mockReviewState[m.id] || m.status;
     return {
@@ -1085,6 +1148,11 @@ function openSubmissionModal(id) {
     const canAct = st === "pending";
     modalActions.classList.toggle("hidden", !canAct);
   }
+  if (modalBtnAccept && st === "pending") {
+    const lam = s.rewardLamports ?? config.rewardLamports ?? DEFAULT_REWARD_LAMPORTS;
+    const sol = (Number(lam) / 1e9).toFixed(2);
+    modalBtnAccept.textContent = `Accept & pay ${sol} SOL`;
+  }
 }
 
 async function loadBioSubmissions() {
@@ -1120,17 +1188,98 @@ if (submissionModalBackdrop) {
 if (submissionModalClose) {
   submissionModalClose.addEventListener("click", () => closeSubmissionModal());
 }
+function showAcceptCelebration({ isMock, solAmount, txSig }) {
+  if (!acceptCelebrationRoot || !acceptCelebrationTitle || !acceptCelebrationSub) return;
+  acceptCelebrationRoot.classList.remove("hidden");
+  acceptCelebrationRoot.setAttribute("aria-hidden", "false");
+  acceptCelebrationRoot.classList.remove("is-leaving");
+
+  const solLabel =
+    typeof solAmount === "number" && Number.isFinite(solAmount)
+      ? solAmount.toFixed(2)
+      : (config.rewardSol != null ? Number(config.rewardSol).toFixed(2) : "1.50");
+
+  if (isMock) {
+    acceptCelebrationTitle.textContent = "Accepted (sample)";
+    acceptCelebrationSub.textContent =
+      "This reference card was marked accepted. On a live submission, Phantom would prompt you to send " +
+      solLabel +
+      " SOL on devnet to the contributor wallet.";
+    if (acceptCelebrationExplorer) {
+      acceptCelebrationExplorer.classList.add("hidden");
+      acceptCelebrationExplorer.href = "#";
+    }
+  } else {
+    acceptCelebrationTitle.textContent = "Accepted · reward sent";
+    acceptCelebrationSub.textContent =
+      "You sent " + solLabel + " SOL to the contributor on Solana devnet. The submission is recorded as accepted.";
+    if (acceptCelebrationExplorer && txSig) {
+      acceptCelebrationExplorer.href = explorerTxUrl(txSig, config.network);
+      acceptCelebrationExplorer.classList.remove("hidden");
+    } else if (acceptCelebrationExplorer) {
+      acceptCelebrationExplorer.classList.add("hidden");
+    }
+  }
+}
+
+function hideAcceptCelebration() {
+  if (!acceptCelebrationRoot) return;
+  const prev = acceptCelebrationRoot.dataset.hideTimer;
+  if (prev) window.clearTimeout(Number(prev));
+  acceptCelebrationRoot.classList.add("is-leaving");
+  const t = window.setTimeout(() => {
+    acceptCelebrationRoot.classList.add("hidden");
+    acceptCelebrationRoot.classList.remove("is-leaving");
+    acceptCelebrationRoot.setAttribute("aria-hidden", "true");
+    delete acceptCelebrationRoot.dataset.hideTimer;
+  }, 280);
+  acceptCelebrationRoot.dataset.hideTimer = String(t);
+}
+
+if (acceptCelebrationDismiss) {
+  acceptCelebrationDismiss.addEventListener("click", () => hideAcceptCelebration());
+}
+if (acceptCelebrationRoot) {
+  acceptCelebrationRoot.addEventListener("click", (e) => {
+    if (e.target === acceptCelebrationRoot) hideAcceptCelebration();
+  });
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (acceptCelebrationRoot && !acceptCelebrationRoot.classList.contains("hidden")) {
+    hideAcceptCelebration();
+  }
+});
+
 if (modalBtnAccept) {
   modalBtnAccept.addEventListener("click", async () => {
     if (!modalOpenId) return;
     const s = submissionDetailCache[modalOpenId];
     const isMock = !!(s?.isMock || String(modalOpenId).startsWith("mock-"));
+    const rewardLamports = s?.rewardLamports ?? config.rewardLamports ?? DEFAULT_REWARD_LAMPORTS;
     const ds = {
       to: s?.wallet,
-      lamports: String(s?.rewardLamports ?? config.rewardLamports ?? ""),
+      lamports: String(rewardLamports),
     };
-    await review(modalOpenId, "accept", isMock, ds);
-    closeSubmissionModal();
+    const origLabel = modalBtnAccept.textContent;
+    modalBtnAccept.disabled = true;
+    if (modalBtnReject) modalBtnReject.disabled = true;
+    modalBtnAccept.textContent = isMock ? "Accepting…" : "Waiting for Phantom…";
+    try {
+      const out = await review(modalOpenId, "accept", isMock, ds);
+      if (out?.ok && out?.accepted) {
+        showAcceptCelebration({
+          isMock: !!out.isMock,
+          solAmount: out.solAmount,
+          txSig: out.txSig,
+        });
+        closeSubmissionModal();
+      }
+    } finally {
+      modalBtnAccept.disabled = false;
+      if (modalBtnReject) modalBtnReject.disabled = false;
+      modalBtnAccept.textContent = origLabel;
+    }
   });
 }
 if (modalBtnReject) {
@@ -1153,7 +1302,16 @@ async function review(id, action, isMock, dataset) {
   if (isMock) {
     mockReviewState[id] = action === "accept" ? "accepted" : "rejected";
     await loadBioSubmissions();
-    return;
+    if (action === "accept") {
+      const lam = Number(dataset?.lamports ?? config.rewardLamports ?? DEFAULT_REWARD_LAMPORTS);
+      return {
+        ok: true,
+        accepted: true,
+        isMock: true,
+        solAmount: Number.isFinite(lam) ? lam / 1e9 : config.rewardSol ?? 1.5,
+      };
+    }
+    return { ok: true, accepted: false };
   }
   if (action === "reject") {
     try {
@@ -1167,44 +1325,46 @@ async function review(id, action, isMock, dataset) {
       if (pk) await refreshWalletStatsForPubkey(pk);
     } catch (e) {
       alert(e.body?.error || e.message || "Review failed.");
+      return { ok: false, accepted: false };
     }
-    return;
+    return { ok: true, accepted: false };
   }
 
   const sub = submissionDetailCache[id];
-  const toWallet = dataset?.to || sub?.wallet;
-  const lamports = Number(dataset?.lamports ?? sub?.rewardLamports ?? config.rewardLamports);
+  const toWallet = (dataset?.to || sub?.wallet || "").trim();
+  const lamports = Number(dataset?.lamports ?? sub?.rewardLamports ?? config.rewardLamports ?? DEFAULT_REWARD_LAMPORTS);
   if (!toWallet || !Number.isFinite(lamports) || lamports <= 0) {
     alert("Missing payout details. Reload the page after config loads.");
-    return;
+    return { ok: false, accepted: false };
   }
   const provider = getProvider();
   if (!provider) {
     alert("Install Phantom to send the reward.");
-    return;
+    return { ok: false, accepted: false };
   }
   try {
     await provider.connect();
   } catch {
-    return;
+    return { ok: false, accepted: false };
   }
   const fromPk = provider.publicKey?.toBase58?.();
   if (!fromPk) {
     alert("Connect your biologist wallet in Phantom.");
-    return;
+    return { ok: false, accepted: false };
   }
   if (fromPk === toWallet) {
     alert(
       "Contributor wallet matches your biologist wallet. Switch Phantom accounts or use two wallets for demo."
     );
-    return;
+    return { ok: false, accepted: false };
   }
   let txSig;
   try {
     txSig = await sendRewardFromBiologistWallet({ fromPubkey: fromPk, toWallet, lamports });
   } catch (e) {
-    alert(e?.message || String(e) || "Transfer failed.");
-    return;
+    const msg = e?.message || String(e) || "Transfer failed.";
+    alert(msg);
+    return { ok: false, accepted: false };
   }
   try {
     await fetchJson(`/api/contribute/biologist/review/${encodeURIComponent(id)}`, {
@@ -1212,17 +1372,23 @@ async function review(id, action, isMock, dataset) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "accept", txSignature: txSig }),
     });
-    const url = explorerTxUrl(txSig, config.network);
-    alert(`Reward sent from your biologist wallet. Explorer: ${url}`);
     await loadBioSubmissions();
     const pk = await getConnectedPubkey();
     if (pk) await refreshWalletStatsForPubkey(pk);
+    return {
+      ok: true,
+      accepted: true,
+      isMock: false,
+      txSig,
+      solAmount: lamports / 1e9,
+    };
   } catch (e) {
     alert(
       e.body?.error ||
         e.message ||
         "Transfer succeeded but server could not record acceptance. Check Explorer for the transaction."
     );
+    return { ok: false, accepted: false };
   }
 }
 
