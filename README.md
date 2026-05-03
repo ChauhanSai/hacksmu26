@@ -2,7 +2,7 @@
 
 **Decentralized wildlife intelligence, verified by experts.**
 
-### 🏆 First place submission to [Hack SMU 2026](https://devpost.com/software/tusk-n-tidy)
+### 🏆 Second place submission to [Hack SMU 2026](https://devpost.com/software/tusk-n-tidy)
 
 Tusk 'n Tidy is the world's first **smart audio library** that cleans up noisy jungle recordings to let experts verify and translate what animals are actually saying: a Web3-powered platform that lets anyone **upload, analyze, and verify** elephant field data with **research-backed audio processing** and on-chain trust. 
 
