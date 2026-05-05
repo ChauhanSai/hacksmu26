@@ -207,3 +207,78 @@ Heavy data stored on IPFS **+** Trust/verification stored on Solana **=** effici
 Tusk ’n Tidy transforms biological data into a **trusted knowledge network.** We’re cleaning the noise, proving the truth, and protecting the giants. 
 
 Let’s change conservation together, **one recording at a time!** 🏞️
+
+# Quick Start Guide
+
+## Project Structure
+
+```
+hacksmu26/
+├── frontend/                    # Web dashboard
+│   ├── index.html              # Landing page
+│   ├── analysis.html           # Analysis dashboard
+│   ├── cleanup.html            # Audio cleanup terminal
+│   ├── css/styles.css          # Dark institutional theme
+│   └── js/                     # Frontend scripts
+├── backend/
+│   ├── elephant_linguistics/   # Call analysis pipeline
+│   └── elephant_ethogram/      # Ethogram data processing
+├── app.py                      # Flask API for audio cleanup
+├── elephant_audio_cleaner.py   # Audio cleaning module
+└── requirements.txt            # Python dependencies
+```
+
+### 1. Install Dependencies
+
+```bash
+cd hacksmu26
+
+# Install root dependencies (for audio cleanup)
+pip install -r requirements.txt
+
+# Install linguistics pipeline dependencies
+pip install -r backend/elephant_linguistics/requirements.txt
+```
+
+### 2. Run the Linguistics Analysis Pipeline
+
+```bash
+cd backend/elephant_linguistics
+
+# Generate sample data (optional, for testing)
+python generate_sample_data.py
+
+# Run the full analysis pipeline
+python run_from_csv.py --csv sample_data/features.csv
+```
+
+This will:
+- Analyze elephant calls and cluster them into call types
+- Train context classifiers
+- Generate visualizations and export data to the frontend
+
+### 3. Start the Frontend Dashboard
+
+```bash
+cd frontend
+
+# Start a local HTTP server
+python -m http.server 8080
+```
+
+Then open http://localhost:8080 in your browser.
+
+### 4. Start the Audio Cleanup Backend (Optional)
+
+```bash
+cd hacksmu26
+
+# Start the Flask API server
+python app.py
+```
+
+The audio cleanup API will run at http://127.0.0.1:5000
+
+Then navigate to http://localhost:8080/cleanup.html to use the audio cleanup feature.
+
+See /backend/elephant_training for more details on the audio processing pipeline and how it can be run independently.
